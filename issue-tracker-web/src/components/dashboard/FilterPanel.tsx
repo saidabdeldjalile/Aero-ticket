@@ -11,10 +11,10 @@ interface FilterPanelProps {
   onReset: () => void;
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ 
-  filters, 
-  onFilterChange, 
-  onReset 
+const FilterPanel: React.FC<FilterPanelProps> = ({
+  filters,
+  onFilterChange,
+  onReset
 }) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -67,41 +67,31 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   };
 
   return (
-    <div className="bg-base-100/80 backdrop-blur-xl rounded-2xl shadow-sm border border-base-300/60 p-5 mb-8">
+    <div className="bg-base-100/80 backdrop-blur-xl rounded-2xl shadow-sm border border-base-300/60 p-6 mb-8">
       <div className="flex flex-col lg:flex-row gap-5 items-end justify-between">
         <div className="flex flex-col sm:flex-row gap-5 items-center flex-1 w-full lg:w-auto">
           <div className="form-control w-full sm:w-auto">
             <label className="label text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-1 px-1 py-0">
               Start Date
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              </div>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) => handleDateChange('startDate', e.target.value)}
-                className="input input-bordered h-11 pl-10 bg-base-100 focus:bg-base-100/50 transition-colors w-full sm:w-[150px]"
-              />
-            </div>
+            <input
+              type="date"
+              value={filters.startDate}
+              onChange={(e) => handleDateChange('startDate', e.target.value)}
+              className="input input-bordered bg-base-100 focus:bg-base-100/50 transition-colors w-full sm:w-[150px]"
+            />
           </div>
-          
+
           <div className="form-control w-full sm:w-auto">
             <label className="label text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-1 px-1 py-0">
               End Date
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/40">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              </div>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) => handleDateChange('endDate', e.target.value)}
-                className="input input-bordered h-11 pl-10 bg-base-100 focus:bg-base-100/50 transition-colors w-full sm:w-[150px]"
-              />
-            </div>
+            <input
+              type="date"
+              value={filters.endDate}
+              onChange={(e) => handleDateChange('endDate', e.target.value)}
+              className="input input-bordered bg-base-100 focus:bg-base-100/50 transition-colors w-full sm:w-[150px]"
+            />
           </div>
 
           <div className="form-control w-full sm:w-auto flex-1 max-w-xs">

@@ -87,19 +87,19 @@ export default function TicketList({ project }: TicketListProps) {
     setPage(0);
   };
 
-   if (error) {
-     return (
-       <div className="flex min-h-[60vh] items-center justify-center p-6">
-         <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-8 text-center shadow-xl dark:border-red-900/40 dark:bg-red-900/20">
-           <div className="text-4xl">⚠️</div>
-           <h2 className="mt-4 text-xl font-bold text-red-700 dark:text-red-200">{t('common.errors.generic')}</h2>
-           <p className="mt-3 text-sm text-red-600/80 dark:text-red-200/80">
-             {t('ticketList.loadError')}
-           </p>
-         </div>
-       </div>
-     );
-   }
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center p-6">
+        <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-8 text-center shadow-xl dark:border-red-900/40 dark:bg-red-900/20">
+          <div className="text-4xl">⚠️</div>
+          <h2 className="mt-4 text-xl font-bold text-red-700 dark:text-red-200">{t('common.errors.generic')}</h2>
+          <p className="mt-3 text-sm text-red-600/80 dark:text-red-200/80">
+            {t('ticketList.loadError')}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -115,21 +115,21 @@ export default function TicketList({ project }: TicketListProps) {
         <div className="border-b border-base-300/60 bg-gradient-to-r from-blue-600/10 via-violet-600/10 to-cyan-500/10 p-6 md:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3.5">
-                <div className="inline-flex items-center gap-2 rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-base-content/60 shadow-sm">
-                  {t('ticketList.projectTickets')}
-                </div>
-                <div>
-                  <h1 className="section-heading">
-                    <span className="opacity-60">#{id}</span> {name}
-                  </h1>
-                  <p className="mt-2.5 max-w-2xl text-sm leading-6 text-base-content/65">
-                    {t('ticketList.description')}
-                  </p>
-                </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-base-content/60 shadow-sm">
+                {t('ticketList.projectTickets')}
               </div>
+              <div>
+                <h1 className="section-heading">
+                  <span className="opacity-60">#{id}</span> {name}
+                </h1>
+                <p className="mt-2.5 max-w-2xl text-sm leading-6 text-base-content/65">
+                  {t('ticketList.description')}
+                </p>
+              </div>
+            </div>
 
             <div className="flex items-center gap-3">
-              <span className="rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2.5 text-sm font-semibold shadow-sm">
+              <span className="rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 text-sm shadow-sm">
                 {paginatedTickets?.totalElements ?? tickets.length} ticket(s)
               </span>
             </div>
@@ -138,7 +138,7 @@ export default function TicketList({ project }: TicketListProps) {
 
         <div className="p-6 md:p-8">
           <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full max-w-xl">
+            <div className="relative w-full lg:w-96">
               <svg
                 className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-base-content/40"
                 fill="none"
@@ -152,17 +152,17 @@ export default function TicketList({ project }: TicketListProps) {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-               <input
+              <input
                 type="text"
                 placeholder={t('ticketList.searchPlaceholder')}
                 value={searchTerm}
                 onChange={handleSearch}
-                className="input input-bordered h-12 w-full pl-12"
+                className="input input-bordered w-full pl-12 focus:ring-2 ring-primary/20"
               />
             </div>
 
             <div className="flex items-center gap-3 text-sm text-base-content/60">
-              <span className="rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2.5 shadow-sm">
+              <span className="rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 shadow-sm">
                 {canDelete ? t('ticketList.adminAccess') : t('ticketList.readOnly')}
               </span>
             </div>
@@ -218,15 +218,14 @@ export default function TicketList({ project }: TicketListProps) {
                       </td>
                       <td>
                         <span
-                          className={`badge ${
-                            ticket.status === "OPEN"
-                              ? "badge-info"
-                              : ticket.status === "IN_PROGRESS"
-                                ? "badge-warning"
-                                : ticket.status === "RESOLVED"
-                                  ? "badge-success"
-                                  : "badge-ghost"
-                          }`}
+                          className={`badge ${ticket.status === "OPEN"
+                            ? "badge-info"
+                            : ticket.status === "IN_PROGRESS"
+                              ? "badge-warning"
+                              : ticket.status === "RESOLVED"
+                                ? "badge-success"
+                                : "badge-ghost"
+                            }`}
                         >
                           {ticket.status}
                         </span>
@@ -240,9 +239,9 @@ export default function TicketList({ project }: TicketListProps) {
                       <td>{ticket.assigned ? ticket.assigned.firstName : t('ticketList.unassigned')}</td>
                       {canDelete && (
                         <td>
-                        <button className="btn btn-sm btn-error" onClick={() => handleDelete(ticket.id)}>
-                          {t('common.delete')}
-                        </button>
+                          <button className="btn btn-sm btn-error" onClick={() => handleDelete(ticket.id)}>
+                            {t('common.delete')}
+                          </button>
                         </td>
                       )}
                     </tr>
@@ -250,16 +249,16 @@ export default function TicketList({ project }: TicketListProps) {
                 </tbody>
               </table>
 
-               {tickets.length === 0 && (
-                 <div className="flex min-h-[240px] items-center justify-center p-10 text-center text-base-content/60">
-                   <div>
-                     <div className="text-lg font-semibold text-base-content">{t('ticketList.noTickets')}</div>
-                     <p className="mt-2 text-sm">
-                       {t('ticketList.noTicketsDesc')}
-                     </p>
-                   </div>
-                 </div>
-               )}
+              {tickets.length === 0 && (
+                <div className="flex min-h-[240px] items-center justify-center p-10 text-center text-base-content/60">
+                  <div>
+                    <div className="text-lg font-semibold text-base-content">{t('ticketList.noTickets')}</div>
+                    <p className="mt-2 text-sm">
+                      {t('ticketList.noTicketsDesc')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {paginatedTickets && paginatedTickets.totalPages > 1 && (

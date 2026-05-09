@@ -311,7 +311,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             className="select select-bordered"
           >
             <option disabled value="">
-              {t('common.select')}
+              {t('createTicket.selectIssueType')}
             </option>
             <option value="Bug">{t('createTicket.types.bug', { default: 'Bug' })}</option>
             <option value="Feature">{t('createTicket.types.feature', { default: 'Feature' })}</option>
@@ -324,22 +324,22 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
           <div className="label">
             <span className="label-text">{t('ticket.status')}</span>
           </div>
-            <select
-                name="status"
-                value={newIssue.status}
-                onChange={(e) => handleChange(e)}
-                className="select select-bordered"
-            >
-                <option value="" disabled>
-                    {t('common.select')}
-                </option>
-                <option value="Open">{t('status.open')}</option>
-                <option value="ToDo">{t('status.pending')}</option>
-                <option value="InProgress">{t('status.inProgress')}</option>
-                <option value="WaitingForUserResponse">{t('status.pending')}</option>
-                <option value="Done">{t('status.resolved')}</option>
-                <option value="Closed">{t('status.closed')}</option>
-            </select>
+          <select
+            name="status"
+            value={newIssue.status}
+            onChange={(e) => handleChange(e)}
+            className="select select-bordered"
+          >
+            <option value="" disabled>
+              {t('createTicket.selectStatus')}
+            </option>
+            <option value="Open">{t('status.open')}</option>
+            <option value="ToDo">{t('status.pending')}</option>
+            <option value="InProgress">{t('status.inProgress')}</option>
+            <option value="WaitingForUserResponse">{t('status.pending')}</option>
+            <option value="Done">{t('status.resolved')}</option>
+            <option value="Closed">{t('status.closed')}</option>
+          </select>
         </label>
         <label className="form-control w-full max-w-xs p-3">
           <div className="label">
@@ -352,7 +352,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             className="select select-bordered"
           >
             <option disabled value="">
-              {t('common.select')}
+              {t('createTicket.selectPriority')}
             </option>
             <option value="High">{t('priority.high')}</option>
             <option value="Medium">{t('priority.medium')}</option>
@@ -371,14 +371,15 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             className="select select-bordered"
           >
             <option value="" disabled>
-              {t('common.select')}
+              {t('createTicket.selectCategory')}
             </option>
-            <option value="Panne Réseau">{t('createTicket.categories.network', { default: 'Network Failure' })}</option>
-            <option value="Problème Logiciel">{t('createTicket.categories.software', { default: 'Software Issue' })}</option>
-            <option value="Panne Matérielle">{t('createTicket.categories.hardware', { default: 'Hardware Failure' })}</option>
-            <option value="Problème de Connexion">{t('createTicket.categories.connection', { default: 'Connection Issue' })}</option>
-            <option value="Demande d'Information">{t('createTicket.categories.info', { default: 'Information Request' })}</option>
-            <option value="Autre">{t('common.other')}</option>
+            <option value="informatique">{t('createTicket.categories.it', { default: 'Informatique' })}</option>
+            <option value="materiel">{t('createTicket.categories.material', { default: 'Matériel' })}</option>
+            <option value="administratif">{t('createTicket.categories.admin', { default: 'Administratif' })}</option>
+            <option value="maintenance">{t('createTicket.categories.maintenance', { default: 'Maintenance' })}</option>
+            <option value="achat">{t('createTicket.categories.purchase', { default: 'Achat' })}</option>
+            <option value="formation">{t('createTicket.categories.formation', { default: 'Formation' })}</option>
+            <option value="autres">{t('common.other', { default: 'Autres' })}</option>
           </select>
         </label>
       </div>
@@ -486,7 +487,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             onChange={(e) => handleChange(e)}
           >
             <option value="" disabled>
-              {t('common.select')}
+              {t('createTicket.selectAssignee')}
             </option>
             {users.map((user: User) => (
               <option value={user.email} key={user.email}>
@@ -507,7 +508,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             onChange={(e) => handleChange(e)}
           >
             <option value="" disabled>
-              {t('common.select')}
+              {t('createTicket.selectReporter')}
             </option>
             {users.map((user: User) => (
               <option value={user.email} key={user.email}>
@@ -530,48 +531,48 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
       {similarTickets &&
         similarTickets.length > 0 &&
         (console.log(similarTickets),
-        (
-          <>
-            <div className="p-3">
-              <span className="font-bold">{t('createTicket.possibleDuplicates', { default: 'Possible Duplicates' })}</span>
-            </div>
-
-            <div className="mx-6">
-              <div className="overflow-x-auto">
-                <table className="table">
-                  {/* head */}
-                  <thead>
-                    <tr>
-                      <th>{t('ticket.ticket')} ID</th>
-                      <th>{t('ticket.title')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {similarTickets?.map((similarTicket) => (
-                      <tr key={similarTicket.id} className="hover">
-                        <th>
-                          <Link
-                            to={`/projects/${newIssue.priority}/tickets/${similarTicket.id}`}
-                          >
-                            <span className=" opacity-60">#</span>
-                            {similarTicket.id}
-                          </Link>
-                        </th>
-                        <td>
-                          <Link
-                            to={`/projects/${newIssue.priority}/tickets/${similarTicket.id}`}
-                          >
-                            {similarTicket.title}
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          (
+            <>
+              <div className="p-3">
+                <span className="font-bold">{t('createTicket.possibleDuplicates', { default: 'Possible Duplicates' })}</span>
               </div>
-            </div>
-          </>
-        ))}
+
+              <div className="mx-6">
+                <div className="overflow-x-auto">
+                  <table className="table">
+                    {/* head */}
+                    <thead>
+                      <tr>
+                        <th>{t('ticket.ticket')} ID</th>
+                        <th>{t('ticket.title')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {similarTickets?.map((similarTicket) => (
+                        <tr key={similarTicket.id} className="hover">
+                          <th>
+                            <Link
+                              to={`/projects/${newIssue.priority}/tickets/${similarTicket.id}`}
+                            >
+                              <span className=" opacity-60">#</span>
+                              {similarTicket.id}
+                            </Link>
+                          </th>
+                          <td>
+                            <Link
+                              to={`/projects/${newIssue.priority}/tickets/${similarTicket.id}`}
+                            >
+                              {similarTicket.title}
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ))}
 
       <div className="modal-action">
         <form method="dialog">

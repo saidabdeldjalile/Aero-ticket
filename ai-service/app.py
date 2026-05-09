@@ -70,8 +70,9 @@ CATÉGORIES DE TICKETS:
 
 RÈGLES:
 1. Sois serviable, professionnel et concis (2-4 phrases maximum)
-2. Propose des solutions concrètes et pratiques
-3. Termine toujours par une question ouverte pour aider davantage
+2. Propose des solutions concrètes et pratiques directement, sans poser de questions
+3. Ne pose JAMAIS de questions à l'utilisateur. Donne la réponse complète immédiatement.
+4. Si la demande concerne les congés, explique directement la procédure sans demander le type de congé.
 
 Réponds uniquement en français de manière utile et directe."""
 
@@ -92,18 +93,35 @@ def load_faq() -> List[Dict]:
     if conn:
         try:
             cursor = conn.cursor()
+            # Load FAQ with keywords from the many-to-many faq_keywords table
             cursor.execute(
                 "SELECT id, question, answer, category FROM faq WHERE active = true"
             )
             rows = cursor.fetchall()
+            faqs = []
+            for r in rows:
+                faq_id = r[0]
+                # Load keywords for this FAQ
+                try:
+                    cursor.execute(
+                        "SELECT keywords FROM faq_keywords WHERE faq_id = %s",
+                        (faq_id,)
+                    )
+                    keywords = [k[0] for k in cursor.fetchall() if k[0]]
+                except Exception:
+                    keywords = []
+                faqs.append({
+                    "id": faq_id,
+                    "question": r[1],
+                    "answer": r[2],
+                    "category": r[3] or "Autres",
+                    "keywords": keywords,
+                })
             cursor.close()
             conn.close()
-            if rows:
-                logger.info(f"✅ FAQ loaded from DB: {len(rows)} entries")
-                return [
-                    {"id": r[0], "question": r[1], "answer": r[2], "category": r[3] or "Autres"}
-                    for r in rows
-                ]
+            if faqs:
+                logger.info(f"✅ FAQ loaded from DB: {len(faqs)} entries with keywords")
+                return faqs
         except Exception as e:
             logger.warning(f"Could not load FAQ from DB: {e}")
 
@@ -118,6 +136,7 @@ def load_faq() -> List[Dict]:
                 "Le service informatique vous fournira vos identifiants de connexion sous 24h ouvrées."
             ),
             "category": "IT",
+            "keywords": ["vpn", "télétravail", "accès distant", "connexion"],
         },
         {
             "id": 2,
@@ -127,6 +146,7 @@ def load_faq() -> List[Dict]:
                 "et utilisez le mot de passe 'AIRALGERIE2024'. Si le problème persiste, contactez l'IT."
             ),
             "category": "IT",
+            "keywords": ["wifi", "réseau", "connexion", "internet"],
         },
         {
             "id": 3,
@@ -136,6 +156,7 @@ def load_faq() -> List[Dict]:
                 "remplissez le formulaire avec les détails de votre demande et soumettez."
             ),
             "category": "IT",
+            "keywords": ["ticket", "demande", "créer", "ouvrir"],
         },
         {
             "id": 4,
@@ -145,6 +166,7 @@ def load_faq() -> List[Dict]:
                 "sur la page de connexion. Un email vous sera envoyé avec les instructions."
             ),
             "category": "IT",
+            "keywords": ["mot de passe", "oublié", "réinitialiser", "compte"],
         },
         {
             "id": 5,
@@ -154,37 +176,98 @@ def load_faq() -> List[Dict]:
                 "avec les dates souhaitées. Votre responsable sera notifié pour validation."
             ),
             "category": "RH",
+            "keywords": ["congé", "absence", "rh"],
+        },
+        {
+            "id": 6,
+            "question": "demande matériel ordinateur écran imprimante",
+            "answer": (
+                "Pour demander du matériel (ordinateur, écran, imprimante, etc.), créez un ticket "
+                "dans la catégorie Matériel en précisant l'équipement, le site concerné et l'urgence. "
+                "Le service Achats traitera votre demande."
+            ),
+            "category": "Matériel",
+            "keywords": ["matériel", "équipement", "ordinateur", "écran", "imprimante", "achat"],
+        },
+        {
+            "id": 7,
+            "question": "panne connexion email internet réseau",
+            "answer": (
+                "En cas de panne réseau, email ou connexion internet, créez un ticket IT. "
+                "Le support technique interviendra dans les plus brefs délais."
+            ),
+            "category": "IT",
+            "keywords": ["panne", "connexion", "email", "internet", "réseau"],
         },
     ]
 
 
 def search_faq(query: str) -> Tuple[str | None, float, str | None]:
-    """Keyword-based FAQ search. Returns (answer, score, category)."""
+    """Keyword-based FAQ search with stem/plural handling. Returns (answer, score, category)."""
     if not FAQ_DATA:
         return None, 0.0, None
 
+    import re
     query_lower = query.lower()
     best_answer   = None
     best_score    = 0.0
     best_category = None
 
+    # Normalize: remove accents, handle common verb endings for better matching
+    def normalize(word: str) -> str:
+        word = word.replace("é", "e").replace("è", "e").replace("ê", "e")
+        word = word.replace("ç", "c")
+        word = word.replace("à", "a").replace("â", "a")
+        word = word.replace("ù", "u").replace("û", "u")
+        word = word.replace("î", "i").replace("ï", "i")
+        word = word.replace("ô", "o").replace("ö", "o")
+        # Strip trailing s/x for plural matching
+        word = re.sub(r'[sx]$', '', word)
+        # Strip common French verb infinitive endings (er, ir, re)
+        word = re.sub(r'(?:er|ir|re)$', '', word)
+        # Strip trailing 'e' so "demande" and "demander" share the same stem "demand"
+        word = re.sub(r'e$', '', word)
+        return word
+
+    query_words = [normalize(w) for w in query_lower.split() if len(w) > 2]
+
     for item in FAQ_DATA:
         question = item.get("question", "").lower()
-        answer   = item.get("answer",   "")
+        answer   = item.get("answer",   "").lower()
         category = item.get("category", "Autres")
+        keywords = item.get("keywords") or []  # Get keywords from DB
+
+        question_normalized = normalize(question)
+        answer_normalized = normalize(answer)
+        keywords_normalized = [normalize(kw.lower()) for kw in keywords if kw]
+
+        # Also split FAQ question into normalized words for partial match
+        faq_words = [normalize(w) for w in question.split() if len(w) > 2]
 
         score = 0
-        for kw in query_lower.split():
-            if len(kw) > 2:
-                if kw in question:
-                    score += 2
-                elif kw in answer.lower():
-                    score += 1
+        for kw in query_words:
+            # Check if keyword matches any DB keywords FIRST (strongest signal)
+            # e.g., "matériel" in user query matches keywords of the "Matériel" FAQ
+            if any(kw in fkw or fkw in kw for fkw in keywords_normalized):
+                score += 4  # Keywords match = very strong
+            # Check if keyword is in question (substring match for compound words)
+            elif kw in question_normalized:
+                score += 2
+            # Check if any FAQ word contains the keyword or vice versa (stem match)
+            elif any(kw in fw or fw in kw for fw in faq_words):
+                score += 2
+            elif kw in answer_normalized:
+                score += 1
+
+        # Bonus: if all query words match, boost score
+        matched_words = sum(1 for kw in query_words if kw in question_normalized or any(kw in fw or fw in kw for fw in faq_words) or any(kw in fkw or fkw in kw for fkw in keywords_normalized))
+        if query_words and matched_words == len(query_words):
+            score += 3
 
         normalised = min(score / 10, 0.95)
         if normalised > best_score:
             best_score    = normalised
-            best_answer   = answer
+            best_answer   = item.get("answer", "")
             best_category = category
 
     if best_score >= FAQ_SIMILARITY_THRESHOLD:
@@ -410,6 +493,32 @@ class ConversationManager:
 
 
 conversation_manager = ConversationManager()
+
+# ==================== UNANSWERED QUESTIONS (auto-enrich FAQ) ====================
+
+def save_unanswered_question(question: str, category: str, user_email: str, session_id: str):
+    """Save questions that Ollama answered (no FAQ match) so admins can review & add to FAQ."""
+    try:
+        payload = {
+            "question": question[:500],
+            "context": f"Posée via chatbot (session: {session_id[:8]}, catégorie: {category})",
+            "userEmail": user_email or "chatbot@system",
+            "suggestedCategory": category,
+            "suggestedDepartment": classify_demand(question),
+        }
+        response = requests.post(
+            f"{BACKEND_API_V1}/unanswered-questions",
+            json=payload,
+            timeout=10,
+        )
+        if response.status_code in [200, 201]:
+            logger.info(f"📝 Unanswered question saved: '{question[:50]}...' (cat: {category})")
+        else:
+            logger.debug(f"Unanswered question save returned HTTP {response.status_code}")
+    except requests.exceptions.ConnectionError:
+        logger.debug(f"Backend unreachable — couldn't save unanswered question")
+    except Exception as e:
+        logger.debug(f"Could not save unanswered question: {e}")
 
 # ==================== HELPERS ====================
 
@@ -703,6 +812,10 @@ def chat():
 
         # 4b — Ollama LLM
         ollama_result = call_ollama(message)
+
+        # Save question as "unanswered" (no FAQ match) for admin review
+        category = classify_demand(message)
+        save_unanswered_question(message, category, user_email, session_id)
 
         if ollama_result["success"]:
             answer = ollama_result["response"]

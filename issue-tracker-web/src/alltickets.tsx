@@ -55,9 +55,9 @@ export default function AllTickets() {
   });
 
   const hasActiveFilters = filters.statuses.length > 0 ||
-                          filters.priorities.length > 0 ||
-                          filters.startDate ||
-                          filters.endDate;
+    filters.priorities.length > 0 ||
+    filters.startDate ||
+    filters.endDate;
 
   const key = `all-tickets-${email}-${role}-${departmentId}-${page}-${searchTerm}-${viewMode}-${filters.statuses.join(',')}-${filters.priorities.join(',')}-${filters.startDate}-${filters.endDate}`;
 
@@ -260,8 +260,8 @@ export default function AllTickets() {
                   </button>
                 </>
               )}
-              <button 
-                className="btn btn-ghost btn-sm" 
+              <button
+                className="btn btn-ghost btn-sm"
                 onClick={() => setShowFilters(!showFilters)}
               >
                 {showFilters ? t('alltickets.hideFilters') : t('alltickets.advancedFilters')}
@@ -311,7 +311,7 @@ export default function AllTickets() {
             <div className="form-control">
               <label className="label-text font-bold mb-2">{t('filters.status')}</label>
               <select
-                className="select select-bordered select-sm"
+                className="select select-bordered"
                 value={tempFilters.statuses.length === 1 ? tempFilters.statuses[0] : ''}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -331,7 +331,7 @@ export default function AllTickets() {
             <div className="form-control">
               <label className="label-text font-bold mb-2">{t('filters.priority')}</label>
               <select
-                className="select select-bordered select-sm"
+                className="select select-bordered"
                 value={tempFilters.priorities.length === 1 ? tempFilters.priorities[0] : ''}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -352,7 +352,7 @@ export default function AllTickets() {
               <label className="label-text font-bold mb-2">{t('filters.startDate')}</label>
               <input
                 type="date"
-                className="input input-bordered input-sm"
+                className="input input-bordered"
                 value={tempFilters.startDate}
                 onChange={(e) => setTempFilters(prev => ({ ...prev, startDate: e.target.value }))}
               />
@@ -361,7 +361,7 @@ export default function AllTickets() {
               <label className="label-text font-bold mb-2">{t('filters.endDate')}</label>
               <input
                 type="date"
-                className="input input-bordered input-sm"
+                className="input input-bordered"
                 value={tempFilters.endDate}
                 onChange={(e) => setTempFilters(prev => ({ ...prev, endDate: e.target.value }))}
               />
@@ -452,28 +452,26 @@ export default function AllTickets() {
                     </Link>
                   </td>
                   <td>
-                    <span className={`badge badge-sm ${
-                      ticket.status === "Open" ? "badge-info" :
-                      ticket.status === "InProgress" ? "badge-warning" :
-                      ticket.status === "Done" ? "badge-success" :
-                      ticket.status === "Closed" ? "badge-neutral" : "badge-ghost"
-                    }`}>
+                    <span className={`badge badge-sm ${ticket.status === "Open" ? "badge-info" :
+                        ticket.status === "InProgress" ? "badge-warning" :
+                          ticket.status === "Done" ? "badge-success" :
+                            ticket.status === "Closed" ? "badge-neutral" : "badge-ghost"
+                      }`}>
                       {ticket.status === "Open" ? t('status.open') :
-                       ticket.status === "InProgress" ? t('status.inProgress') :
-                       ticket.status === "Done" ? t('status.resolved') :
-                       ticket.status === "Closed" ? t('status.closed') : ticket.status}
+                        ticket.status === "InProgress" ? t('status.inProgress') :
+                          ticket.status === "Done" ? t('status.resolved') :
+                            ticket.status === "Closed" ? t('status.closed') : ticket.status}
                     </span>
                   </td>
                   <td>
-                    <span className={`badge badge-sm ${
-                      ticket.priority === "High" ? "badge-error" :
-                      ticket.priority === "Medium" ? "badge-warning" :
-                      ticket.priority === "Critical" ? "badge-error" : "badge-success"
-                    }`}>
+                    <span className={`badge badge-sm ${ticket.priority === "High" ? "badge-error" :
+                        ticket.priority === "Medium" ? "badge-warning" :
+                          ticket.priority === "Critical" ? "badge-error" : "badge-success"
+                      }`}>
                       {ticket.priority === "Critical" ? t('priority.critical') :
-                       ticket.priority === "High" ? t('priority.high') :
-                       ticket.priority === "Medium" ? t('priority.medium') :
-                       ticket.priority === "Low" ? t('priority.low') : ticket.priority}
+                        ticket.priority === "High" ? t('priority.high') :
+                          ticket.priority === "Medium" ? t('priority.medium') :
+                            ticket.priority === "Low" ? t('priority.low') : ticket.priority}
                     </span>
                   </td>
                   <td className="text-sm">{new Date(ticket.createdAt).toLocaleDateString()}</td>
@@ -490,8 +488,8 @@ export default function AllTickets() {
                   </td>
                   {canDelete && (
                     <td className="text-center">
-                      <button 
-                        className="btn btn-error btn-sm" 
+                      <button
+                        className="btn btn-error btn-sm"
                         onClick={() => handleDelete(ticket.id)}
                       >
                         {t('common.delete')}

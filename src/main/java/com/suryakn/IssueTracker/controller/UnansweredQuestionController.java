@@ -39,6 +39,26 @@ public class UnansweredQuestionController {
         return ResponseEntity.ok(unansweredQuestionService.getPendingCount());
     }
 
+
+    @PostMapping
+    public ResponseEntity<UnansweredQuestion> createQuestion(
+            @Valid @RequestBody UnansweredQuestionDto dto) {
+        log.info("Creating unanswered question: {}", dto.getQuestion());
+        UnansweredQuestion saved = unansweredQuestionService.saveQuestion(
+                dto.getQuestion(),
+                dto.getContext(),
+                dto.getUserEmail(),
+                dto.getSuggestedCategory(),
+                dto.getSuggestedDepartment(),
+                dto.getRelatedTicketId()
+        );
+        if (saved == null) {
+            // Question already exists
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.ok(saved);
+    }
+
     @PostMapping("/{id}/add-to-faq")
     public ResponseEntity<UnansweredQuestion> addToFaq(
             @PathVariable Long id,

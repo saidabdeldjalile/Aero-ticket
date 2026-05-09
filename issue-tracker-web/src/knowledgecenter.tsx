@@ -47,7 +47,7 @@ const ITEMS_PER_PAGE = 6;
 
 export default function KnowledgeCenter() {
   const { t } = useTranslation();
-  
+
   // --- États ---
   const [activeTab, setActiveTab] = useState<TabKey>("faq");
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -57,7 +57,7 @@ export default function KnowledgeCenter() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
-  
+
   const [faqPage, setFaqPage] = useState(1);
   const [pendingPage, setPendingPage] = useState(1);
 
@@ -88,7 +88,7 @@ export default function KnowledgeCenter() {
       if (deptRes.status === 'fulfilled') setDepartments(deptRes.value.data?.content || []);
       if (faqRes.status === 'fulfilled') setFaqs(faqRes.value.data || []);
       if (pendingRes.status === 'fulfilled') setUnansweredQuestions(pendingRes.value.data || []);
-      
+
     } catch (error) {
       toast.error(t('knowledgeCenter.common.noData'));
     } finally {
@@ -132,46 +132,49 @@ export default function KnowledgeCenter() {
     }
   };
 
-   const addToFaq = async (id: number) => {
-     if (!pendingAnswer.trim()) {
-       toast.error(t('knowledgeCenter.pending.answerRequired'));
-       return;
-     }
-     try {
-       await api.post(`/unanswered-questions/${id}/add-to-faq`, {
-         answer: pendingAnswer,
-         category: pendingCategory || "autres",
-         keywords: "",
-       });
-       toast.success(t('knowledgeCenter.pending.addSuccess'));
-       loadData();
-       setSelectedPending(null);
-       setPendingAnswer("");
-     } catch (error) {
-       toast.error(t('knowledgeCenter.pending.error'));
-     }
-   };
+  const addToFaq = async (id: number) => {
+    if (!pendingAnswer.trim()) {
+      toast.error(t('knowledgeCenter.pending.answerRequired'));
+      return;
+    }
+    try {
+      await api.post(`/unanswered-questions/${id}/add-to-faq`, {
+        answer: pendingAnswer,
+        category: pendingCategory || "autres",
+        keywords: "",
+      });
+      toast.success(t('knowledgeCenter.pending.addSuccess'));
+      loadData();
+      setSelectedPending(null);
+      setPendingAnswer("");
+    } catch (error) {
+      toast.error(t('knowledgeCenter.pending.error'));
+    }
+  };
 
-   const deletePendingQuestion = async (id: number) => {
-     if (!window.confirm(t('knowledgeCenter.pending.deleteConfirm'))) return;
-     try {
-       await api.delete(`/unanswered-questions/${id}`);
-       toast.success(t('knowledgeCenter.pending.deleteSuccess'));
-       loadData();
-     } catch (error) {
-       toast.error(t('common.errors.generic'));
-     }
-   };
+  const deletePendingQuestion = async (id: number) => {
+    if (!window.confirm(t('knowledgeCenter.pending.deleteConfirm'))) return;
+    try {
+      await api.delete(`/unanswered-questions/${id}`);
+      toast.success(t('knowledgeCenter.pending.deleteSuccess'));
+      loadData();
+    } catch (error) {
+      toast.error(t('common.errors.generic'));
+    }
+  };
 
-  // --- Filtrage & Pagination ---
-  const filteredFaqs = useMemo(() => {
-    const query = search.toLowerCase();
-    return faqs.filter((item) =>
-      [item.question, item.answer, item.category, item.departmentName].some((v) => 
-        (v || "").toLowerCase().includes(query)
-      )
-    );
-  }, [faqs, search]);
+   // --- Filtrage & Pagination ---
+   const filteredFaqs = useMemo(() => {
+     const query = search.toLowerCase();
+     return faqs.filter((item) =>
+       [item.question, item.answer, item.category, item.departmentName].some((v) =>
+         (v || "").toLowerCase().includes(query)
+       ) || 
+       item.keywords.some(keyword => 
+         keyword.toLowerCase().includes(query)
+       )
+     );
+   }, [faqs, search]);
 
   const paginatedFaqs = useMemo(() => {
     const start = (faqPage - 1) * ITEMS_PER_PAGE;
@@ -203,13 +206,26 @@ export default function KnowledgeCenter() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className="text-3xl font-black tracking-tight">{t('knowledgeCenter.title')}</h1>
-              <p className="text-base-content/60 mt-1">{t('knowledgeCenter.subtitle')}</p>
+              <p className="text-base-content/60 mt-1">Base de connaissances et questions fréquentes</p>
             </div>
             <div className="relative w-full md:w-96">
-              <input 
-                type="text" 
+              <svg
+                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-base-content/40"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
                 placeholder={t('knowledgeCenter.searchPlaceholder')}
-                className="input input-bordered w-full pl-4 bg-base-100 focus:ring-2 ring-primary/20"
+                className="input input-bordered w-full pl-12 bg-base-100 focus:ring-2 ring-primary/20"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setFaqPage(1); }}
               />
@@ -220,13 +236,13 @@ export default function KnowledgeCenter() {
 
       {/* Tabs */}
       <div className="tabs tabs-boxed bg-base-200 p-1 w-fit mx-auto">
-        <button 
+        <button
           className={`tab tab-lg px-8 transition-all ${activeTab === "faq" ? "tab-active !bg-base-100 shadow-sm" : ""}`}
           onClick={() => setActiveTab("faq")}
         >
           {t('knowledgeCenter.tabs.faq', { count: faqs.length })}
         </button>
-        <button 
+        <button
           className={`tab tab-lg px-8 transition-all ${activeTab === "pending" ? "tab-active !bg-base-100 shadow-sm" : ""}`}
           onClick={() => setActiveTab("pending")}
         >
@@ -260,15 +276,15 @@ export default function KnowledgeCenter() {
                         </td>
                         <td className="py-4">
                           <div className="flex justify-center gap-2">
-                            <button 
-                              className="btn btn-primary btn-sm" 
+                            <button
+                              className="btn btn-primary btn-sm"
                               onClick={() => setFaqForm(item)}
                               title={t('common.edit')}
                             >
                               {t('common.edit')}
                             </button>
-                            <button 
-                              className="btn btn-error btn-sm" 
+                            <button
+                              className="btn btn-error btn-sm"
                               onClick={() => deleteFaq(item.id)}
                               title={t('common.delete')}
                             >
@@ -285,23 +301,23 @@ export default function KnowledgeCenter() {
               {/* Pagination FAQ */}
               <div className="p-4 border-t border-base-200 flex items-center justify-between bg-base-50">
                 <span className="text-sm opacity-60">
-                  {t('common.page')} {faqPage} / {totalFaqPages || 1}
+                  Page {faqPage} / {totalFaqPages || 1}
                 </span>
                 <div className="join shadow-sm">
-                   <button 
-                     className="join-item btn btn-sm" 
-                     disabled={faqPage === 1} 
-                     onClick={() => setFaqPage(p => p - 1)}
-                   >
-                     {t('common.previous')}
-                   </button>
-                   <button 
-                     className="join-item btn btn-sm" 
-                     disabled={faqPage >= totalFaqPages} 
-                     onClick={() => setFaqPage(p => p + 1)}
-                   >
-                     {t('common.next')}
-                   </button>
+                  <button
+                    className="join-item btn btn-sm"
+                    disabled={faqPage === 1}
+                    onClick={() => setFaqPage(p => p - 1)}
+                  >
+                    ← Précédent
+                  </button>
+                  <button
+                    className="join-item btn btn-sm"
+                    disabled={faqPage >= totalFaqPages}
+                    onClick={() => setFaqPage(p => p + 1)}
+                  >
+                    Suivant →
+                  </button>
                 </div>
               </div>
             </div>
@@ -316,28 +332,28 @@ export default function KnowledgeCenter() {
                 </h2>
                 <div className="form-control">
                   <label className="label-text font-bold mb-1">{t('knowledgeCenter.faq.question')}</label>
-                  <input 
+                  <input
                     type="text"
-                    className="input input-bordered focus:input-primary" 
-                    value={faqForm.question} 
-                    onChange={(e) => setFaqForm({...faqForm, question: e.target.value})} 
+                    className="input input-bordered focus:input-primary"
+                    value={faqForm.question}
+                    onChange={(e) => setFaqForm({ ...faqForm, question: e.target.value })}
                   />
                 </div>
                 <div className="form-control">
-                  <label className="label-text font-bold mb-1">{t('repond')}</label>
-                  <textarea 
-                    className="textarea textarea-bordered focus:textarea-primary h-32" 
-                    value={faqForm.answer} 
-                    onChange={(e) => setFaqForm({...faqForm, answer: e.target.value})} 
+                  <label className="label-text font-bold mb-1">Réponse</label>
+                  <textarea
+                    className="textarea textarea-bordered focus:textarea-primary h-32"
+                    value={faqForm.answer}
+                    onChange={(e) => setFaqForm({ ...faqForm, answer: e.target.value })}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="form-control">
                     <label className="label-text font-bold mb-1">{t('knowledgeCenter.faq.category')}</label>
-                    <select 
-                      className="select select-bordered select-sm" 
-                      value={faqForm.category} 
-                      onChange={(e) => setFaqForm({...faqForm, category: e.target.value})}
+                    <select
+                      className="select select-bordered select-sm"
+                      value={faqForm.category}
+                      onChange={(e) => setFaqForm({ ...faqForm, category: e.target.value })}
                     >
                       {categories.map(c => (
                         <option key={c.key} value={c.key}>{c.label}</option>
@@ -346,10 +362,10 @@ export default function KnowledgeCenter() {
                   </div>
                   <div className="form-control">
                     <label className="label-text font-bold mb-1">{t('knowledgeCenter.faq.department')}</label>
-                    <select 
-                      className="select select-bordered select-sm" 
-                      value={faqForm.departmentId || ""} 
-                      onChange={(e) => setFaqForm({...faqForm, departmentId: Number(e.target.value) || null})}
+                    <select
+                      className="select select-bordered select-sm"
+                      value={faqForm.departmentId || ""}
+                      onChange={(e) => setFaqForm({ ...faqForm, departmentId: Number(e.target.value) || null })}
                     >
                       <option value="">{t('common.none')}</option>
                       {departments.map(d => (
@@ -359,15 +375,15 @@ export default function KnowledgeCenter() {
                   </div>
                 </div>
                 <div className="card-actions justify-end mt-4">
-                  <button 
-                    className="btn btn-ghost btn-sm" 
+                  <button
+                    className="btn btn-ghost btn-sm"
                     onClick={() => setFaqForm(emptyFaq)}
                   >
                     {t('common.cancel')}
                   </button>
-                  <button 
-                    className={`btn btn-primary btn-sm ${saving ? 'loading' : ''}`} 
-                    onClick={saveFaq} 
+                  <button
+                    className={`btn btn-primary btn-sm ${saving ? 'loading' : ''}`}
+                    onClick={saveFaq}
                     disabled={!faqForm.question || !faqForm.answer}
                   >
                     {faqForm.id ? t('common.update') : t('common.save')}
@@ -393,24 +409,30 @@ export default function KnowledgeCenter() {
                   <p className="text-sm text-base-content/70 line-clamp-2 mt-1">
                     {q.context}
                   </p>
-                   <div className="card-actions justify-end mt-4">
-                     <button 
-                       className="btn btn-primary btn-sm rounded-full px-6" 
-                       onClick={() => { 
-                         setSelectedPending(q); 
-                         setPendingCategory(q.suggestedCategory); 
-                       }}
-                     >
-                       {t('knowledgeCenter.pending.answer')}
-                     </button>
-                     <button 
-                       className="btn btn-error btn-sm" 
-                       onClick={() => deletePendingQuestion(q.id)}
-                       title={t('common.delete')}
-                     >
-                       {t('common.delete')}
-                     </button>
-                   </div>
+                  <div className="card-actions justify-end mt-4 gap-2">
+                    <button
+                      className="btn btn-primary btn-sm rounded-lg gap-1.5 shadow-sm hover:shadow-md transition-all"
+                      onClick={() => {
+                        setSelectedPending(q);
+                        setPendingCategory(q.suggestedCategory);
+                      }}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      {t('knowledgeCenter.pending.answer')}
+                    </button>
+                    <button
+                      className="btn btn-outline btn-error btn-sm rounded-lg gap-1.5 hover:shadow-md transition-all"
+                      onClick={() => deletePendingQuestion(q.id)}
+                      title={t('common.delete')}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      {t('common.delete')}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -419,29 +441,38 @@ export default function KnowledgeCenter() {
           {/* Pagination Pending */}
           {totalPendingPages > 1 && (
             <div className="flex justify-center mt-10">
-              <div className="join">
-                <button 
-                  className="join-item btn btn-sm"
+              <div className="join shadow-md rounded-xl overflow-hidden">
+                <button
+                  className="join-item btn btn-sm bg-base-100 hover:bg-base-200 border-base-300 px-4 gap-1"
                   disabled={pendingPage === 1}
                   onClick={() => setPendingPage(p => p - 1)}
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                   {t('common.previous')}
                 </button>
                 {[...Array(totalPendingPages)].map((_, i) => (
-                  <button 
-                    key={i} 
-                    className={`join-item btn btn-sm ${pendingPage === i + 1 ? 'btn-primary' : ''}`} 
+                  <button
+                    key={i}
+                    className={`join-item btn btn-sm min-w-[2.5rem] border-base-300 ${pendingPage === i + 1
+                        ? 'btn-primary text-white shadow-inner'
+                        : 'bg-base-100 hover:bg-base-200'
+                      }`}
                     onClick={() => setPendingPage(i + 1)}
                   >
                     {i + 1}
                   </button>
                 ))}
-                <button 
-                  className="join-item btn btn-sm"
+                <button
+                  className="join-item btn btn-sm bg-base-100 hover:bg-base-200 border-base-300 px-4 gap-1"
                   disabled={pendingPage === totalPendingPages}
                   onClick={() => setPendingPage(p => p + 1)}
                 >
                   {t('common.next')}
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -471,29 +502,35 @@ export default function KnowledgeCenter() {
                 <label className="label-text font-bold mb-2 block">
                   {t('knowledgeCenter.faq.answer')} <span className="text-error">*</span>
                 </label>
-                <textarea 
-                  className="textarea textarea-bordered w-full h-40" 
+                <textarea
+                  className="textarea textarea-bordered w-full h-40"
                   value={pendingAnswer}
                   onChange={(e) => setPendingAnswer(e.target.value)}
                   placeholder={t('knowledgeCenter.pending.answerPlaceholder')}
                   autoFocus
                 />
               </div>
-              <div className="modal-action">
-                <button 
-                  className="btn btn-ghost" 
+              <div className="modal-action gap-2">
+                <button
+                  className="btn btn-ghost gap-1.5"
                   onClick={() => {
                     setSelectedPending(null);
                     setPendingAnswer("");
                   }}
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                   {t('common.cancel')}
                 </button>
-                <button 
-                  className="btn btn-primary" 
-                  onClick={() => addToFaq(selectedPending.id)} 
+                <button
+                  className="btn btn-primary gap-1.5 shadow-md hover:shadow-lg transition-all"
+                  onClick={() => addToFaq(selectedPending.id)}
                   disabled={!pendingAnswer.trim()}
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                   {t('knowledgeCenter.pending.addToFaq')}
                 </button>
               </div>

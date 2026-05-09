@@ -49,6 +49,15 @@ tmp/
 logs/
 server.log
 server_err.log
+ollama.err
+ollama.out
+
+### Python ###
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+ai-service/__pycache__/
 
 ### OS ###
 .DS_Store
@@ -62,3 +71,4 @@ env/
 .venv/
 .env/
 uploads/screenshots/
+email-youcef-achira.md

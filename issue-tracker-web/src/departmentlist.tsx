@@ -83,13 +83,13 @@ export default function DepartmentList() {
 
     const request = editingDepartment
       ? api.put(`/departments/${editingDepartment.id}`, {
-          name: departmentName,
-          description: description,
-        })
+        name: departmentName,
+        description: description,
+      })
       : api.post("/departments", {
-          name: departmentName,
-          description: description,
-        });
+        name: departmentName,
+        description: description,
+      });
 
     request
       .then(() => {
@@ -156,10 +156,10 @@ export default function DepartmentList() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-base-content/60 shadow-sm mb-3">
-                {t('department.administration')}
+                Départements
               </div>
               <h1 className="text-3xl font-black tracking-tight">{t('department.title')}</h1>
-              <p className="text-base-content/60 mt-1">{t('department.subtitle')}</p>
+              <p className="text-base-content/60 mt-1">Gestion des départements de l'organisation</p>
             </div>
             <div className="flex flex-wrap gap-3">
               <button className="btn btn-primary" onClick={() => openModal()}>
@@ -209,7 +209,7 @@ export default function DepartmentList() {
           <table className="table table-zebra w-full">
             <thead className="bg-base-200/50">
               <tr>
-                <th className="py-4">ID</th>
+                <th>ID</th>
                 <th>{t('department.name')}</th>
                 <th>{t('department.description')}</th>
                 <th className="text-center">{t('common.actions')}</th>
@@ -220,21 +220,21 @@ export default function DepartmentList() {
                 <tr key={dept.id} className="hover:bg-primary/5 transition-colors">
                   <td className="font-semibold">
                     <span className="opacity-60">#</span>{dept.id}
-                   </td>
+                  </td>
                   <td className="font-medium">{dept.name}</td>
                   <td className="text-base-content/75">
                     {dept.description || <span className="italic opacity-50">Aucune description</span>}
                   </td>
                   <td className="text-center">
                     <div className="flex justify-center gap-2">
-                      <button 
-                        className="btn btn-warning btn-sm" 
+                      <button
+                        className="btn btn-warning btn-sm"
                         onClick={() => openModal(dept)}
                       >
                         {t('common.edit')}
                       </button>
-                      <button 
-                        className="btn btn-error btn-sm" 
+                      <button
+                        className="btn btn-error btn-sm"
                         onClick={() => handleDelete(dept.id, dept.name)}
                       >
                         {t('common.delete')}
@@ -244,7 +244,7 @@ export default function DepartmentList() {
                 </tr>
               ))}
             </tbody>
-           </table>
+          </table>
 
           {/* Empty State */}
           {departments.length === 0 && (
@@ -267,7 +267,7 @@ export default function DepartmentList() {
                 {searchTerm ? "Aucun résultat ne correspond à votre recherche" : "Cliquez sur 'Créer un département' pour commencer"}
               </p>
               {!searchTerm && (
-                <button 
+                <button
                   className="btn btn-primary btn-sm mt-6"
                   onClick={() => openModal()}
                 >

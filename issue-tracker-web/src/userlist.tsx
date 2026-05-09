@@ -201,7 +201,7 @@ export default function UserList() {
                 Administration
               </div>
               <h1 className="text-3xl font-black tracking-tight">{t('user.title')}</h1>
-              <p className="text-base-content/60 mt-1">{t('user.subtitle')}</p>
+              <p className="text-base-content/60 mt-1">Gestion des utilisateurs et des accès</p>
             </div>
             <div className="flex gap-3">
               <button className="btn btn-primary" onClick={() => openModal()}>
@@ -283,14 +283,14 @@ export default function UserList() {
                   </td>
                   <td className="py-4">
                     <div className="flex justify-center gap-2">
-                      <button 
-                        className="btn btn-primary btn-sm" 
+                      <button
+                        className="btn btn-primary btn-sm"
                         onClick={() => openModal(user)}
                       >
                         Modifier
                       </button>
-                      <button 
-                        className="btn btn-error btn-sm" 
+                      <button
+                        className="btn btn-error btn-sm"
                         onClick={() => handleDelete(user.id)}
                       >
                         Supprimer
@@ -341,17 +341,17 @@ export default function UserList() {
 
           <form onSubmit={handleSubmit} className="p-6">
             <div className="grid gap-4 md:grid-cols-2">
-                <div className="form-control">
-                  <label className="label-text font-bold mb-1">Matricule</label>
-                  <input
-                    type="text"
-                    value={formData.registrationNumber}
-                    onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                    className="input input-bordered w-full"
-                    placeholder="Ex: EMP-001"
-                    required
-                  />
-                </div>
+              <div className="form-control">
+                <label className="label-text font-bold mb-1">Matricule</label>
+                <input
+                  type="text"
+                  value={formData.registrationNumber}
+                  onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
+                  className="input input-bordered w-full"
+                  placeholder="Ex: EMP-001"
+                  required
+                />
+              </div>
 
               <div className="form-control">
                 <label className="label-text font-bold mb-1">Rôle</label>
