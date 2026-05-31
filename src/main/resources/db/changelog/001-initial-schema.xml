@@ -80,6 +80,7 @@
             <column name="status" type="VARCHAR(50)"/>
             <column name="priority" type="VARCHAR(50)"/>
             <column name="category" type="VARCHAR(100)"/>
+            <column name="issue_type" type="VARCHAR(50)"/>
             <column name="vector" type="TEXT"/>
             <column name="routed_department_name" type="VARCHAR(100)"/>
             <column name="routing_reason" type="TEXT"/>
@@ -90,9 +91,7 @@
             <column name="modified_at" type="TIMESTAMP"/>
             <column name="created_by_id" type="INTEGER"/>
             <column name="assigned_to_id" type="INTEGER"/>
-            <column name="project_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
+            <column name="project_id" type="BIGINT"/>
         </createTable>
 
         <addForeignKeyConstraint

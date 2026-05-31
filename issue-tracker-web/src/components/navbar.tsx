@@ -68,18 +68,18 @@ export default function NavBar() {
 
   const navigationItems = useMemo(
     () => [
-      { label: t('navbar.dashboard'), to: "/dashboard", icon: LayoutDashboard, adminOnly: true },
-      { label: t('navbar.services'), to: "/departments", icon: Building, adminOnly: true },
-      { label: t('navbar.projects'), to: "/projects", icon: Briefcase, adminOnly: false },
-      { label: t('navbar.tickets'), to: "/my-tickets", icon: Ticket, adminOnly: false },
-      { label: t('navbar.knowledge'), to: "/knowledge", icon: BookOpen, adminOnly: true },
-      { label: t('navbar.users'), to: "/users", icon: Users, adminOnly: true },
+      { label: t('navbar.dashboard'), to: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN"] },
+      { label: t('navbar.services'), to: "/departments", icon: Building, roles: ["ADMIN"] },
+      { label: t('navbar.projects'), to: "/projects", icon: Briefcase, roles: ["ADMIN", "SUPPORT", "USER"] },
+      { label: t('navbar.tickets'), to: "/my-tickets", icon: Ticket, roles: ["ADMIN", "SUPPORT", "USER"] },
+      { label: t('navbar.knowledge'), to: "/knowledge", icon: BookOpen, roles: ["ADMIN", "SUPPORT"] },
+      { label: t('navbar.users'), to: "/users", icon: Users, roles: ["ADMIN"] },
     ],
     [t]
   );
 
   const accessibleNavItems = navigationItems.filter(
-    (item) => !item.adminOnly || auth?.role === "ADMIN"
+    (item) => !item.roles || item.roles.includes(auth?.role || "")
   );
 
   const userInitials = `${auth?.firstName?.charAt(0) || ''}${auth?.lastName?.charAt(0) || ''}`;

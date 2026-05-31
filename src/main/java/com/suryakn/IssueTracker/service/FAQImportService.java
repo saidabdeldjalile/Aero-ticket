@@ -29,10 +29,10 @@ public class FAQImportService {
         
         int imported = 0;
         
-        for (Ticket ticket : allTickets) {
-            if (ticket.getStatus() != Status.Closed && ticket.getStatus() != Status.Done) {
-                continue;
-            }
+         for (Ticket ticket : allTickets) {
+            if (ticket.getStatus() != Status.Terminé) {
+                 continue;
+             }
             
             if (ticket.getTitle() == null || ticket.getTitle().isEmpty()) {
                 continue;
@@ -74,11 +74,11 @@ public class FAQImportService {
         return "Statut: " + ticket.getStatus();
     }
     
-    public int getResolvedTicketsCount() {
-        return (int) ticketRepository.findAll().stream()
-            .filter(t -> t.getStatus() == Status.Closed || t.getStatus() == Status.Done)
-            .count();
-    }
+     public int getResolvedTicketsCount() {
+         return (int) ticketRepository.findAll().stream()
+             .filter(t -> t.getStatus() == Status.Terminé)
+             .count();
+     }
     
     public int getFAQCount() {
         return faqRepository.findByActiveTrue().size();

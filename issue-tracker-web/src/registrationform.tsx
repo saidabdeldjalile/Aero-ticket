@@ -18,29 +18,29 @@ function Registrationform() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const navigate = useNavigate();
 
-   const handleSubmit = async (e: any) => {
-     e.preventDefault();
-     setLoading(true);
-     
-      try {
-        await axios.post(`${config.authUrl}/register`, {
-          firstName: firstName,
-          lastName: lastName,
-          password: password,
-          email: email,
-          role: "USER",
-          registrationNumber: registrationNumber,
-        });
-       toast.success(t('common.message.success'));
-       setTimeout(() => {
-         navigate("/login", { replace: true });
-       }, 1500);
-     } catch (error) {
-       toast.error(t('common.errors.generic'));
-     } finally {
-       setLoading(false);
-     }
-   };
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await axios.post(`${config.authUrl}/register`, {
+        firstName: firstName,
+        lastName: lastName,
+        password: password,
+        email: email,
+        role: "USER",
+        registrationNumber: registrationNumber,
+      });
+      toast.success(t('common.message.success'));
+      setTimeout(() => {
+        navigate("/login", { replace: true });
+      }, 1500);
+    } catch (error) {
+      toast.error(t('common.errors.generic'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const passwordStrength = () => {
     if (password.length === 0) return 0;
@@ -64,10 +64,10 @@ function Registrationform() {
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-red-950 to-gray-900">
         <div className="absolute inset-0 bg-[url('/images/GFC-login-background.jpg')] bg-cover bg-center opacity-10"></div>
-        
+
         {/* Animated Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]"></div>
-        
+
         {/* Floating Red Particles */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
@@ -80,31 +80,31 @@ function Registrationform() {
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-6xl animate-scaleUp">
           <div className="grid lg:grid-cols-2 gap-0 bg-white/5 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-            
+
             {/* Left Side - Brand Section */}
             <div className="hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-red-600/20 via-red-800/10 to-gray-900/40 relative overflow-hidden">
               <div className="relative z-10">
                 <div className="mb-12">
                   <div className="bg-white rounded-2xl p-4 inline-block shadow-lg">
                     <img
-                      src="/images/Logo_Air_Algérie.png"
+                      src="/images/air-algerie-logo.png"
                       alt="Air Algeria Logo"
                       className="h-14 w-auto object-contain"
                     />
                   </div>
                 </div>
-                
+
                 <h2 className="text-4xl font-black text-white mb-4">
-                  Bienvenue sur<br/>
+                  Bienvenue sur<br />
                   <span className="text-red-500">
                     Issue Tracker
                   </span>
                 </h2>
-                
+
                 <p className="text-white/70 text-lg mb-8 leading-relaxed">
                   La plateforme moderne de gestion d'incidents et de suivi de projets pour Air Algérie.
                 </p>
-                
+
                 <div className="space-y-4">
                   {[
                     "Suivi en temps réel des tickets",
@@ -119,13 +119,13 @@ function Registrationform() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="relative z-10 mt-12">
                 <p className="text-white/40 text-[10px] uppercase tracking-widest">
                   © 2024 Air Algérie Issue Tracker
                 </p>
               </div>
-              
+
               {/* Decorative Elements */}
               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-red-600 rounded-full blur-3xl opacity-20"></div>
             </div>
@@ -179,22 +179,22 @@ function Registrationform() {
                   </div>
                 </div>
 
-                 {/* Matricule Field */}
-                 <div className="relative">
-                   <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${focusedField === 'matricule' || registrationNumber ? 'text-red-600' : 'text-gray-400'}`}>
-                     <Briefcase className="w-4 h-4" />
-                   </div>
-                   <input
-                     type="text"
-                     placeholder="Matricule"
-                     className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all"
-                     value={registrationNumber}
-                     onFocus={() => setFocusedField('matricule')}
-                     onBlur={() => setFocusedField(null)}
-                     onChange={(e) => setRegistrationNumber(e.target.value)}
-                     required
-                   />
-                 </div>
+                {/* Matricule Field */}
+                <div className="relative">
+                  <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${focusedField === 'matricule' || registrationNumber ? 'text-red-600' : 'text-gray-400'}`}>
+                    <Briefcase className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Matricule"
+                    className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all"
+                    value={registrationNumber}
+                    onFocus={() => setFocusedField('matricule')}
+                    onBlur={() => setFocusedField(null)}
+                    onChange={(e) => setRegistrationNumber(e.target.value)}
+                    required
+                  />
+                </div>
 
                 {/* Email Field */}
                 <div className="relative">
@@ -237,12 +237,12 @@ function Registrationform() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  
+
                   {/* Password Strength Meter */}
                   {password.length > 0 && (
                     <div className="space-y-1">
                       <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className={`h-full ${strengthColor()} transition-all duration-300 rounded-full`}
                           style={{ width: `${passwordStrength()}%` }}
                         ></div>
@@ -288,8 +288,8 @@ function Registrationform() {
 
                 {/* Login Link */}
                 <div className="text-center">
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-700 font-semibold transition-colors"
                   >
                     Se connecter

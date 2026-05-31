@@ -19,12 +19,10 @@ interface KanbanBoardProps {
 }
 
 const STATUS_CONFIG = [
-  { key: "Open", label: "Open", labelFr: "Ouvert", color: "bg-blue-500" },
-  { key: "InProgress", label: "In Progress", labelFr: "En cours", color: "bg-yellow-500" },
-  { key: "Resolved", label: "Resolved", labelFr: "Résolu", color: "bg-green-500" },
-  { key: "Closed", label: "Closed", labelFr: "Fermé", color: "bg-gray-500" },
-  { key: "Pending", label: "Pending", labelFr: "En attente", color: "bg-orange-500" },
-  { key: "Reopened", label: "Reopened", labelFr: "Rouvert", color: "bg-purple-500" },
+  { key: "Nouveau", label: "New", labelFr: "Nouveau", color: "bg-blue-500" },
+  { key: "EnCours", label: "In Progress", labelFr: "En cours", color: "bg-yellow-500" },
+  { key: "EnAttente", label: "Waiting", labelFr: "En attente", color: "bg-purple-500" },
+  { key: "Terminé", label: "Done", labelFr: "Terminé", color: "bg-green-500" },
 ];
 
 export default function KanbanBoard({ projectId, departmentId }: KanbanBoardProps) {
@@ -40,12 +38,12 @@ export default function KanbanBoard({ projectId, departmentId }: KanbanBoardProp
       if (departmentId) params.departmentId = departmentId;
 
       const response = await api.get<KanbanData>("/tickets/kanban", { params });
-      
+
       const kanbanColumns = STATUS_CONFIG.map((config) => ({
         status: config.key,
         tickets: response.data[config.key] || [],
       }));
-      
+
       setColumns(kanbanColumns);
     } catch (error) {
       console.error("Error fetching kanban data:", error);
@@ -79,13 +77,13 @@ export default function KanbanBoard({ projectId, departmentId }: KanbanBoardProp
           {t("kanban.title")}
         </h2>
       </div>
-      
+
       <div className="flex overflow-x-auto gap-5 pb-6 snap-x">
         {columns.map((column) => {
           const config = STATUS_CONFIG.find(c => c.key === column.status);
           const colorClass = config?.color || "bg-gray-500";
           const colorName = colorClass.replace('bg-', '').split('-')[0];
-          
+
           return (
             <div
               key={column.status}
@@ -104,10 +102,10 @@ export default function KanbanBoard({ projectId, departmentId }: KanbanBoardProp
                   </span>
                 </div>
                 <div className={`h-1 w-full rounded-full mt-3 bg-${colorName}-500/20 overflow-hidden`}>
-                   <div className={`h-full w-full ${colorClass}`}></div>
+                  <div className={`h-full w-full ${colorClass}`}></div>
                 </div>
               </div>
-              
+
               <div className="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
                 {column.tickets.map((ticket) => (
                   <div
@@ -117,21 +115,26 @@ export default function KanbanBoard({ projectId, departmentId }: KanbanBoardProp
                     <div className={`absolute top-0 left-0 w-1 h-full ${colorClass} opacity-70 group-hover:opacity-100 transition-opacity`}></div>
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-xs font-bold text-base-content/40 uppercase tracking-wider">#{ticket.id}</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${
-                        ticket.priority === "High" || ticket.priority === "Critical" || ticket.priority === "Urgent"
-                          ? "bg-error/10 text-error border border-error/20"
-                          : ticket.priority === "Medium"
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${ticket.priority === "High" || ticket.priority === "Critical" || ticket.priority === "Urgent"
+                        ? "bg-error/10 text-error border border-error/20"
+                        : ticket.priority === "Medium"
                           ? "bg-warning/10 text-warning border border-warning/20"
                           : "bg-info/10 text-info border border-info/20"
-                      }`}>
+                        }`}>
                         {ticket.priority}
                       </span>
                     </div>
-                    
+
                     <h4 className="font-semibold text-sm text-base-content mb-3 leading-snug group-hover:text-primary transition-colors line-clamp-2">
                       {ticket.title}
                     </h4>
-                    
+
+                    {ticket.issueType && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-base-content/50 mb-2 block">
+                        {ticket.issueType}
+                      </span>
+                    )}
+
                     {ticket.assigned && (
                       <div className="flex items-center justify-between mt-auto pt-3 border-t border-base-200/50">
                         <div className="flex items-center gap-2">
@@ -146,7 +149,7 @@ export default function KanbanBoard({ projectId, departmentId }: KanbanBoardProp
                     )}
                   </div>
                 ))}
-                
+
                 {column.tickets.length === 0 && (
                   <div className="h-24 flex items-center justify-center border-2 border-dashed border-base-300/60 rounded-xl bg-base-100/30">
                     <span className="text-xs font-medium text-base-content/40">Aucun ticket</span>

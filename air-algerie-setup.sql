@@ -1,2 +1,1 @@
--- Air Algérie Departments (Services)
-INSERT INTO department (name
+-- Air Algérie Departments (Services

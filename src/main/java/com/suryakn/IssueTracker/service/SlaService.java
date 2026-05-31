@@ -63,32 +63,30 @@ public class SlaService {
         LocalDateTime now = LocalDateTime.now();
         
         for (Ticket ticket : allTickets) {
-            if (ticket.getStatus() == Status.Deleted) continue;
-            
             // First response SLA
             if (ticket.getFirstResponseDueAt() != null && now.isAfter(ticket.getFirstResponseDueAt())) {
-                if (ticket.getStatus() == Status.Open) {
+                if (ticket.getStatus() == Status.Nouveau) {
                     breachedTickets++;
                 }
             }
             
-            // Resolution SLA
-            if (ticket.getResolutionDueAt() != null && now.isAfter(ticket.getResolutionDueAt())) {
-                if (ticket.getStatus() != Status.Done && ticket.getStatus() != Status.Closed) {
-                    atRiskTickets++;
-                }
-            }
+             // Resolution SLA
+             if (ticket.getResolutionDueAt() != null && now.isAfter(ticket.getResolutionDueAt())) {
+                 if (ticket.getStatus() != Status.Terminé) {
+                     atRiskTickets++;
+                 }
+             }
             
-            // Resolved tickets - check if on time
-            if (ticket.getStatus() == Status.Done || ticket.getStatus() == Status.Closed) {
-                if (ticket.getResolutionDueAt() != null && ticket.getModifiedAt() != null) {
-                    if (ticket.getModifiedAt().isBefore(ticket.getResolutionDueAt())) {
-                        resolvedOnTime++;
-                    } else {
-                        resolvedLate++;
-                    }
-                }
-            }
+             // Resolved tickets - check if on time
+             if (ticket.getStatus() == Status.Terminé) {
+                 if (ticket.getResolutionDueAt() != null && ticket.getModifiedAt() != null) {
+                     if (ticket.getModifiedAt().isBefore(ticket.getResolutionDueAt())) {
+                         resolvedOnTime++;
+                     } else {
+                         resolvedLate++;
+                     }
+                 }
+             }
         }
         
         double complianceRate = totalTickets > 0 ? ((double) resolvedOnTime / (resolvedOnTime + resolvedLate)) * 100 : 100.0;
@@ -131,29 +129,27 @@ public class SlaService {
         LocalDateTime now = LocalDateTime.now();
         
         for (Ticket ticket : tickets) {
-            if (ticket.getStatus() == Status.Deleted) continue;
-            
             if (ticket.getFirstResponseDueAt() != null && now.isAfter(ticket.getFirstResponseDueAt())) {
-                if (ticket.getStatus() == Status.Open) {
+                if (ticket.getStatus() == Status.Nouveau) {
                     breachedTickets++;
                 }
             }
             
-            if (ticket.getResolutionDueAt() != null && now.isAfter(ticket.getResolutionDueAt())) {
-                if (ticket.getStatus() != Status.Done && ticket.getStatus() != Status.Closed) {
-                    atRiskTickets++;
-                }
-            }
+             if (ticket.getResolutionDueAt() != null && now.isAfter(ticket.getResolutionDueAt())) {
+                 if (ticket.getStatus() != Status.Terminé) {
+                     atRiskTickets++;
+                 }
+             }
             
-            if (ticket.getStatus() == Status.Done || ticket.getStatus() == Status.Closed) {
-                if (ticket.getResolutionDueAt() != null && ticket.getModifiedAt() != null) {
-                    if (ticket.getModifiedAt().isBefore(ticket.getResolutionDueAt())) {
-                        resolvedOnTime++;
-                    } else {
-                        resolvedLate++;
-                    }
-                }
-            }
+             if (ticket.getStatus() == Status.Terminé) {
+                 if (ticket.getResolutionDueAt() != null && ticket.getModifiedAt() != null) {
+                     if (ticket.getModifiedAt().isBefore(ticket.getResolutionDueAt())) {
+                         resolvedOnTime++;
+                     } else {
+                         resolvedLate++;
+                     }
+                 }
+             }
         }
         
         double complianceRate = totalTickets > 0 ? 
@@ -169,17 +165,15 @@ public class SlaService {
                 .build();
     }
 
-    public List<TicketSlaStatus> getBreachedTickets() {
-        List<TicketSlaStatus> breached = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        
-        List<Ticket> tickets = ticketRepository.findAll();
-        for (Ticket ticket : tickets) {
-            if (ticket.getStatus() == Status.Deleted || 
-                ticket.getStatus() == Status.Done ||
-                ticket.getStatus() == Status.Closed) {
-                continue;
-            }
+     public List<TicketSlaStatus> getBreachedTickets() {
+         List<TicketSlaStatus> breached = new ArrayList<>();
+         LocalDateTime now = LocalDateTime.now();
+         
+         List<Ticket> tickets = ticketRepository.findAll();
+         for (Ticket ticket : tickets) {
+             if (ticket.getStatus() == Status.Terminé) {
+                 continue;
+             }
             
             if (ticket.getFirstResponseDueAt() != null && now.isAfter(ticket.getFirstResponseDueAt())) {
                 long minutesOverdue = Duration.between(ticket.getFirstResponseDueAt(), now).toMinutes();
@@ -211,17 +205,15 @@ public class SlaService {
                 .collect(Collectors.toList());
     }
 
-    public List<TicketSlaStatus> getAtRiskTickets() {
-        List<TicketSlaStatus> atRisk = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        
-        List<Ticket> tickets = ticketRepository.findAll();
-        for (Ticket ticket : tickets) {
-            if (ticket.getStatus() == Status.Deleted || 
-                ticket.getStatus() == Status.Done ||
-                ticket.getStatus() == Status.Closed) {
-                continue;
-            }
+     public List<TicketSlaStatus> getAtRiskTickets() {
+         List<TicketSlaStatus> atRisk = new ArrayList<>();
+         LocalDateTime now = LocalDateTime.now();
+         
+         List<Ticket> tickets = ticketRepository.findAll();
+         for (Ticket ticket : tickets) {
+             if (ticket.getStatus() == Status.Terminé) {
+                 continue;
+             }
             
             // Check first response risk
             if (ticket.getFirstResponseDueAt() != null && 
@@ -258,8 +250,6 @@ public class SlaService {
     }
 
     public void checkAndNotifySlaBreach(Ticket ticket) {
-        if (ticket.getStatus() == Status.Deleted) return;
-        
         LocalDateTime now = LocalDateTime.now();
         
         // First response breach

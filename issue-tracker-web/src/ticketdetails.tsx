@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { TicketResponse, User } from "./TicketResponse";
+import { TicketResponse, User, Project } from "./TicketResponse";
 import api from "./api/axios";
 import { AxiosResponse } from "axios";
 import { toast } from "react-toastify";
@@ -26,12 +26,10 @@ type TicketBodyProps = {
 };
 
 const STATUS_MAP: Record<string, { label: string; accent: string; dot: string }> = {
-  Open: { label: "Ouvert", accent: "#D2122E", dot: "bg-red-600" },
-  ToDo: { label: "À faire", accent: "#6B7280", dot: "bg-gray-400" },
-  InProgress: { label: "En cours", accent: "#F97316", dot: "bg-orange-400" },
-  WaitingForUserResponse: { label: "En attente", accent: "#EAB308", dot: "bg-yellow-400" },
-  Done: { label: "Terminé", accent: "#22C55E", dot: "bg-green-400" },
-  Closed: { label: "Fermé", accent: "#1F2937", dot: "bg-gray-800" },
+  Nouveau: { label: "Nouveau", accent: "#D2122E", dot: "bg-red-600" },
+  EnCours: { label: "En cours", accent: "#F97316", dot: "bg-orange-400" },
+  EnAttente: { label: "En attente", accent: "#EAB308", dot: "bg-yellow-400" },
+  Terminé: { label: "Terminé", accent: "#22C55E", dot: "bg-green-400" },
 };
 
 const PRIORITY_MAP: Record<string, { label: string; emoji: string; bar: string }> = {
@@ -95,13 +93,23 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
   const [priority, setPriority] = useState(ticket?.priority ?? "Medium");
   const [assigned, setAssigned] = useState(ticket?.assigned?.email ?? "");
   const [users, setUsers] = useState<User[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState(ticket?.project?.id ?? null);
 
   useEffect(() => {
     api.get("/users").then((res: AxiosResponse) => {
       const data = res.data?.content || res.data || [];
       setUsers(Array.isArray(data) ? data : []);
     });
+    api.get("/projects").then((res: AxiosResponse) => {
+      const data = res.data?.content || res.data || [];
+      setProjects(Array.isArray(data) ? data : []);
+    });
   }, []);
+
+  useEffect(() => {
+    setSelectedProjectId(ticket?.project?.id ?? null);
+  }, [ticket?.project?.id]);
 
   useEffect(() => {
     setPriority(ticket?.priority ?? "Medium");
@@ -109,8 +117,8 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
   }, [ticket?.priority, ticket?.assigned?.email]);
 
   const status = useMemo(() => {
-    const s = ticket?.status || "Open";
-    return STATUS_MAP[s] || STATUS_MAP.Open;
+    const s = ticket?.status || "Nouveau";
+    return STATUS_MAP[s] || STATUS_MAP.Nouveau;
   }, [ticket?.status]);
 
   const prio = useMemo(() => {
@@ -118,20 +126,20 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
     return PRIORITY_MAP[p] || PRIORITY_MAP.Medium;
   }, [priority, ticket?.priority]);
 
-  const canEditAssignee = auth?.role === "ADMIN";
-  const canEditPriority = auth?.role === "ADMIN" || auth?.email === assigned;
+  const canEditAssignee = auth?.role === "ADMIN" || auth?.role === "SUPPORT";
+  const canEditPriority = auth?.role === "ADMIN" || auth?.role === "SUPPORT" || auth?.email === assigned;
 
   const assignee = useMemo(() => users.find((u) => u.email === assigned) || ticket?.assigned, [users, assigned, ticket?.assigned]);
 
   const formattedDate = (date: string | undefined) =>
     date
       ? new Date(date).toLocaleString("fr-FR", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
       : "—";
 
   function updateAssigned(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -158,6 +166,23 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
       .catch((err) => {
         const errorMessage = err.response?.data?.message || err.message || "Erreur lors de la mise à jour";
         toast.error(errorMessage);
+      });
+  }
+
+  function persistProjectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const newProjectId = Number(e.target.value);
+    setSelectedProjectId(newProjectId);
+    api
+      .patch(`/tickets/${ticket?.id}`, {
+        projectId: newProjectId,
+        modifierEmail: auth?.email,
+        modifierRole: auth?.role,
+      })
+      .then(() => toast.success(`Projet du ticket #${ticket?.id} mis à jour`))
+      .catch((err) => {
+        const errorMessage = err.response?.data?.message || err.message || "Erreur lors du changement de projet";
+        toast.error(errorMessage);
+        setSelectedProjectId(ticket?.project?.id ?? null); // revert on error
       });
   }
 
@@ -262,7 +287,7 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
                 )}
                 {!canEditAssignee && (
                   <p className="mt-2 text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                    <Shield className="w-3 h-3" /> Réservé à l'administrateur
+                    <Shield className="w-3 h-3" /> Réservé à l'administrateur / support
                   </p>
                 )}
               </div>
@@ -278,11 +303,10 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
                       <button
                         key={p}
                         onClick={() => persistPriority(p)}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all border ${
-                          active
-                            ? "border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
-                            : "border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                        }`}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all border ${active
+                          ? "border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
+                          : "border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                          }`}
                       >
                         <span className={`w-2 h-5 rounded-full flex-shrink-0 ${cfg.bar} ${active ? "opacity-100" : "opacity-30"}`} />
                         <span>{cfg.emoji}</span>
@@ -292,7 +316,7 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
                     );
                   })}
                   <p className="pt-1 text-xs text-gray-400 flex items-center gap-1">
-                    <Shield className="w-3 h-3 text-blue-500" /> Accessible si admin ou assigné
+                    <Shield className="w-3 h-3 text-blue-500" /> Accessible si admin, support ou assigné
                   </p>
                 </div>
               ) : (
@@ -306,7 +330,7 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
                     />
                   </div>
                   <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                    <Shield className="w-3 h-3" /> Admin ou assigné uniquement
+                    <Shield className="w-3 h-3" /> Admin, support ou assigné uniquement
                   </p>
                 </div>
               )}
@@ -316,8 +340,26 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
               <MetaRow icon={<Calendar className="w-4 h-4" />} label="Créé le" value={formattedDate(ticket?.createdAt)} />
               <MetaRow icon={<Clock className="w-4 h-4" />} label="Modifié" value={formattedDate(ticket?.modifiedAt)} />
               <MetaRow icon={<Building2 className="w-4 h-4" />} label="Dépt." value={ticket?.project?.departmentName ?? "—"} />
-              <MetaRow icon={<GitBranch className="w-4 h-4" />} label="Projet" value={ticket?.project?.name ?? "—"} />
+              <MetaRow icon={<GitBranch className="w-4 h-4" />} label="Projet" value={
+                canEditAssignee ? (
+                  <select
+                    value={selectedProjectId ?? ""}
+                    onChange={persistProjectChange}
+                    className="w-full appearance-none px-2 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
+                  >
+                    <option value="">— Sans projet —</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  ticket?.project?.name ?? "—"
+                )
+              } />
               <MetaRow icon={<FolderTree className="w-4 h-4" />} label="Catégorie" value={ticket?.category ?? "—"} />
+              <MetaRow icon={<GitBranch className="w-4 h-4" />} label="Type" value={ticket?.issueType ?? "—"} />
             </SectionCard>
           </div>
 
@@ -332,7 +374,7 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
                     Actions
                   </h3>
                 </div>
-                <TicketActions ticket={ticket} onUpdate={() => {}} />
+                <TicketActions ticket={ticket} onUpdate={() => { }} />
               </div>
             </div>
 
@@ -347,19 +389,21 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
               <div className="text-sm text-gray-700 dark:text-gray-300">
                 <ul className="list-disc pl-5 space-y-1">
                   <li>
-                    <span className="font-semibold">Open</span> → validation admin (
-                    <span className="font-semibold">ToDo</span>)
+                    <span className="font-semibold">Nouveau</span> → validation (
+                    <span className="font-semibold">EnCours</span>) — Admin / Support
                   </li>
                   <li>
-                    <span className="font-semibold">ToDo</span> → support démarre (
-                    <span className="font-semibold">InProgress</span>)
+                    <span className="font-semibold">Nouveau</span> → supprimer — Reporter
                   </li>
                   <li>
-                    <span className="font-semibold">InProgress</span> → attente user / terminé
+                    <span className="font-semibold">EnCours</span> → attente user / terminé
                   </li>
                   <li>
-                    <span className="font-semibold">Done</span> → clôture (
-                    <span className="font-semibold">Closed</span>)
+                    <span className="font-semibold">EnAttente</span> → retour (
+                    <span className="font-semibold">EnCours</span>)
+                  </li>
+                  <li>
+                    <span className="font-semibold">Terminé</span> → terminé
                   </li>
                 </ul>
               </div>
@@ -370,4 +414,3 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
     </div>
   );
 }
-

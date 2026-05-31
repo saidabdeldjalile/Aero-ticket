@@ -98,4 +98,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
     
     Page<Ticket> findByProjectIdAndStatusInAndPriorityIn(
         Long projectId, List<Status> statuses, List<Priority> priorities, Pageable pageable);
+
+    // Find tickets without a project (for admin orientation)
+    List<Ticket> findByProjectIsNull();
 }

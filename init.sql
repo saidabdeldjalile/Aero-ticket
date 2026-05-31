@@ -1,3 +1,0 @@
--- Fichier d'initialisation pour PostgreSQL
--- Les tables sont créées automatiquement par Hibernate (Spring Boot)
--- Vous pouvez ajouter ici des inserts de données de test si nécessaire.

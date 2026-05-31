@@ -37,13 +37,13 @@ public class UserEntity implements UserDetails {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
     private List<Comment> comments;
 
-    @OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
     private List<Ticket> createdTickets;
 
-    @OneToMany(mappedBy = "assignedTo", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "assignedTo", fetch = FetchType.LAZY)
     private List<Ticket> assignedTickets;
 
     @Override

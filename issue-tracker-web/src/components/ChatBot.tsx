@@ -3,13 +3,13 @@ import useAuth from "../hooks/useAuth";
 import { aiService } from "../api/axios";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { useTranslation } from "react-i18next";
-import { 
-  Send, 
-  X, 
-  Bot, 
-  Sparkles, 
-  CheckCircle2, 
-  Star, 
+import {
+  Send,
+  X,
+  Bot,
+  Sparkles,
+  CheckCircle2,
+  Star,
   ChevronRight,
   PhoneCall,
   Terminal,
@@ -244,9 +244,9 @@ export default function ChatBot({ onClose }: ChatBotProps) {
         timestamp: new Date(),
         action: draft
           ? {
-              label: t('chatbot.createTicket'),
-              draft,
-            }
+            label: t('chatbot.createTicket'),
+            draft,
+          }
           : undefined,
         meta: metaParts.join(" • "),
         sentiment: data.sentiment?.sentiment,
@@ -437,13 +437,13 @@ export default function ChatBot({ onClose }: ChatBotProps) {
   ];
 
   return (
-    <div className="fixed bottom-24 right-6 z-50 flex h-[650px] w-[26rem] flex-col overflow-hidden rounded-[2.5rem] border border-white/20 bg-white/70 shadow-[0_20px_50px_rgba(0,0,0,0.1)] backdrop-blur-[20px] dark:border-white/10 dark:bg-slate-900/80 dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-scaleUp">
+    <div className="fixed bottom-0 right-6 z-[70] flex max-h-[calc(100vh-5rem)] h-[650px] w-[26rem] flex-col overflow-hidden rounded-t-[2.5rem] rounded-b-none border border-white/20 bg-white/70 shadow-[0_20px_50px_rgba(0,0,0,0.1)] backdrop-blur-[20px] dark:border-white/10 dark:bg-slate-900/80 dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-scaleUp">
       {/* Header */}
       <div className="relative overflow-hidden px-6 py-5">
         {/* Animated background element */}
         <div className="absolute -right-10 -top-10 h-32 w-32 animate-blob rounded-full bg-red-500/10 blur-2xl"></div>
         <div className="absolute -left-10 -bottom-10 h-32 w-32 animate-blob animation-delay-2000 rounded-full bg-gray-500/10 blur-2xl"></div>
-        
+
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -470,8 +470,8 @@ export default function ChatBot({ onClose }: ChatBotProps) {
               </div>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={onClose}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100/50 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-800 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
           >
@@ -483,8 +483,8 @@ export default function ChatBot({ onClose }: ChatBotProps) {
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 scroll-smooth">
         {messages.map((msg, index) => (
-          <div 
-            key={msg.id} 
+          <div
+            key={msg.id}
             className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"} animate-slideInUp`}
             style={{ animationDelay: `${index * 0.05}s` }}
           >
@@ -494,16 +494,15 @@ export default function ChatBot({ onClose }: ChatBotProps) {
                   <Sparkles className="h-3 w-3 text-red-500" />
                 </div>
               )}
-              
-              <div 
-                className={`group relative rounded-2xl px-4 py-3 shadow-sm transition-all duration-200 ${
-                  msg.sender === "user" 
-                    ? "rounded-br-none bg-gradient-to-br from-red-600 to-red-800 text-white" 
-                    : "rounded-bl-none bg-white border border-slate-100 text-slate-800 dark:bg-slate-800/50 dark:border-white/5 dark:text-slate-100"
-                }`}
+
+              <div
+                className={`group relative rounded-2xl px-4 py-3 shadow-sm transition-all duration-200 ${msg.sender === "user"
+                  ? "rounded-br-none bg-gradient-to-br from-red-600 to-red-800 text-white"
+                  : "rounded-bl-none bg-white border border-slate-100 text-slate-800 dark:bg-slate-800/50 dark:border-white/5 dark:text-slate-100"
+                  }`}
               >
                 <p className="text-[14px] leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                
+
                 {/* Meta info / Sentiment */}
                 {msg.urgency && msg.sender === "bot" && (
                   <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${urgencyColors[msg.urgency] || "bg-slate-100 text-slate-500"}`}>
@@ -511,7 +510,7 @@ export default function ChatBot({ onClose }: ChatBotProps) {
                     {msg.urgency === "high" ? t('chatbot.urgency.high') : msg.urgency === "medium" ? t('chatbot.urgency.medium') : t('chatbot.urgency.low')}
                   </div>
                 )}
-                
+
                 {msg.meta && (
                   <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-white/5">
                     {msg.meta.split(' • ').map((part, i) => (
@@ -525,14 +524,14 @@ export default function ChatBot({ onClose }: ChatBotProps) {
                 {/* Actions */}
                 {msg.action && (
                   <div className="mt-4 flex flex-col gap-2">
-                    <button 
+                    <button
                       onClick={() => handleConfirmTicket(msg.action!.draft!)}
                       className="group flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-[13px] font-bold text-white shadow-lg shadow-red-500/25 transition-all hover:bg-red-700 hover:shadow-red-500/40"
                     >
                       <CheckCircle2 className="h-4 w-4" />
                       {msg.action.label}
                     </button>
-                    <button 
+                    <button
                       onClick={() => openDraft(msg.action?.draft)}
                       className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[12px] font-semibold text-slate-600 transition-all hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                     >
@@ -560,8 +559,8 @@ export default function ChatBot({ onClose }: ChatBotProps) {
                 {/* Ticket Info */}
                 {msg.ticketCreated && (
                   <div className="mt-4">
-                    <a 
-                      href={msg.ticketUrl || "/projects"} 
+                    <a
+                      href={msg.ticketUrl || "/projects"}
                       className="flex items-center gap-3 rounded-xl bg-emerald-500 p-3 text-white shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-600"
                     >
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
@@ -707,19 +706,18 @@ export default function ChatBot({ onClose }: ChatBotProps) {
             className="w-full rounded-2xl border-none bg-slate-100 px-5 py-4 pr-14 text-[14px] text-slate-800 focus:ring-2 focus:ring-red-600/20 dark:bg-slate-800 dark:text-white dark:focus:ring-red-600/30"
             disabled={isLoading}
           />
-          <button 
-            onClick={handleSend} 
-            className={`absolute right-2 flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
-              !inputText.trim() || isLoading 
-                ? "bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-600" 
-                : "bg-red-600 text-white shadow-lg shadow-red-500/30 hover:scale-105 active:scale-95"
-            }`}
+          <button
+            onClick={handleSend}
+            className={`absolute right-2 flex h-10 w-10 items-center justify-center rounded-xl transition-all ${!inputText.trim() || isLoading
+              ? "bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-600"
+              : "bg-red-600 text-white shadow-lg shadow-red-500/30 hover:scale-105 active:scale-95"
+              }`}
             disabled={isLoading || !inputText.trim()}
           >
             <Send className="h-5 w-5" />
           </button>
         </div>
-        
+
         <p className="mt-3 text-center text-[10px] font-medium text-slate-400 dark:text-slate-500">
           Propulsé par l'IA d'Air Algérie • Support IT 24/7
         </p>

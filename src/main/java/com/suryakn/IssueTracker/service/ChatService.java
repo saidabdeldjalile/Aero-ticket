@@ -297,13 +297,13 @@ public class ChatService {
                 long totalTickets = ticketRepository.count();
                 dashboardStats.put("totalTickets", totalTickets);
 
-                long openTickets = ticketRepository.countByStatus(Status.Open);
+                long openTickets = ticketRepository.countByStatus(Status.Nouveau);
                 dashboardStats.put("openTickets", openTickets);
 
-long inProgressTickets = ticketRepository.countByStatus(Status.InProgress);
+long inProgressTickets = ticketRepository.countByStatus(Status.EnCours);
                  dashboardStats.put("inProgressTickets", inProgressTickets);
 
-                 long resolvedTickets = ticketRepository.countByStatus(Status.Done);
+                  long resolvedTickets = ticketRepository.countByStatus(Status.Terminé);
                  dashboardStats.put("resolvedTickets", resolvedTickets);
 
                 long totalProjects = projectRepository.count();
@@ -1002,10 +1002,12 @@ long inProgressTickets = ticketRepository.countByStatus(Status.InProgress);
             String category = request.getCategory() != null ? request.getCategory() : context.getLastCategory();
             String priority = request.getPriority() != null ? request.getPriority() : "Medium";
             String userEmail = request.getUserEmail();
-            
             String department = routingService.getSuggestedDepartmentName(defaultCategory(category));
-            SuggestedProject suggestedProject = resolveSuggestedProject(department, userEmail);
-            Long projectId = request.getProjectId() != null ? request.getProjectId() : suggestedProject.projectId;
+            
+            // Pour les tickets générés par chatbot, le projet sera déterminé par l'admin
+            // On ne passe pas de projet pour permettre à l'admin d'orienter le ticket
+            Long projectId = null; // Le projet sera assigné par l'admin
+            log.info("Chatbot ticket created without project - awaiting admin orientation");
 
             if (title == null || title.isBlank()) {
                 return baseResponse(sessionId)
@@ -1014,12 +1016,8 @@ long inProgressTickets = ticketRepository.countByStatus(Status.InProgress);
                         .build();
             }
             
-            if (projectId == null) {
-                return baseResponse(sessionId)
-                        .intent("ticket_creation_error")
-                        .response("Aucun projet trouvé pour le service " + department + ". Veuillez créer le ticket manuellement ou contacter le support.")
-                        .build();
-            }
+            // Note: projectId peut être null ici (le ticket sera créé sans projet)
+            // L'admin pourra l'orienter vers un projet depuis le panneau d'administration
 
             TicketRequest ticketRequest = TicketRequest.builder()
                     .title(title)

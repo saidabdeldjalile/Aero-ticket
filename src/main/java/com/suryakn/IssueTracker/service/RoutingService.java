@@ -1,7 +1,9 @@
 package com.suryakn.IssueTracker.service;
 
 import com.suryakn.IssueTracker.entity.Department;
+import com.suryakn.IssueTracker.entity.Project;
 import com.suryakn.IssueTracker.repository.DepartmentRepository;
+import com.suryakn.IssueTracker.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class RoutingService {
 
     private final DepartmentRepository departmentRepository;
+    private final ProjectRepository projectRepository;
 
     private static final Map<String, String> CATEGORY_TO_DEPARTMENT = new HashMap<>();
     
@@ -50,6 +53,38 @@ public class RoutingService {
         
         // Fallback: find first available department
         return departmentRepository.findAll().stream().findFirst();
+    }
+
+    /**
+     * Find the first project in the department associated with the given category.
+     * This provides an automatic project suggestion for chatbot-generated tickets.
+     */
+    public Optional<Project> findSuggestedProjectByCategory(String category) {
+        if (category == null || category.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Optional<Department> deptOpt = findDepartmentByClassification(category);
+        if (deptOpt.isPresent()) {
+            List<Project> projects = projectRepository.findByDepartmentId(deptOpt.get().getId());
+            if (!projects.isEmpty()) {
+                Project project = projects.get(0);
+                log.info("Suggested project '{}' (id={}) for category '{}' in department '{}'", 
+                    project.getName(), project.getId(), category, deptOpt.get().getName());
+                return Optional.of(project);
+            }
+        }
+        
+        // Fallback: first available project
+        List<Project> allProjects = projectRepository.findAll();
+        if (!allProjects.isEmpty()) {
+            Project project = allProjects.get(0);
+            log.info("Fallback suggested project '{}' (id={}) for category '{}'", 
+                project.getName(), project.getId(), category);
+            return Optional.of(project);
+        }
+        
+        return Optional.empty();
     }
 
     public String getSuggestedDepartmentName(String category) {

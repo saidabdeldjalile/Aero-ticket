@@ -56,7 +56,11 @@
       "bug": "Bug",
       "feature": "Fonctionnalité",
       "task": "Tâche",
-      "improvement": "Amélioration"
+      "improvement": "Amélioration",
+      "incident": "Incident",
+      "serviceRequest": "Demande de service",
+      "question": "Question",
+      "change": "Changement"
     },
     "categories": {
       "network": "Panne Réseau",
@@ -82,6 +86,7 @@
     "status": "Statut",
     "priority": "Priorité",
     "category": "Catégorie",
+    "issueType": "Type",
     "createdBy": "Créé par",
     "assignedTo": "Assigné à",
     "createdAt": "Créé le",
@@ -104,13 +109,12 @@
     "descriptionUpdated": "Description du ticket mise à jour avec succès"
   },
   "status": {
-    "open": "Ouverte",
+    "nouveau": "Nouveau",
+    "toDo": "À faire",
     "inProgress": "En cours",
-    "resolved": "Résolue",
-    "closed": "Clôturée",
-    "deleted": "Supprimée",
-    "pending": "En attente",
-    "reopened": "Rouverte"
+    "waitingForUserResponse": "En attente de réponse",
+    "done": "Terminé",
+    "closed": "Clôturée"
   },
   "priority": {
     "low": "Basse",
@@ -160,10 +164,24 @@
   },
   "notifications": {
     "title": "Notifications",
+    "alerts": "Alertes",
+    "description": "Restez informé des dernières mises à jour et activités.",
     "markAsRead": "Marquer comme lu",
     "markAllAsRead": "Tout marquer lu",
+    "markAllRead": "Tout marquer lu",
     "noNotifications": "Aucune notification",
-    "newNotification": "Nouvelle notification"
+    "newNotification": "Nouvelle notification",
+    "unread": "Vous avez {{count}} notification{{pluralize}} non lue{{pluralize}}",
+    "empty": "Tout est à jour !",
+    "emptyDesc": "Vous n'avez aucune notification pour le moment. Les nouvelles notifications apparaîtront ici.",
+    "new": "Nouveau",
+    "upToDate": "Vous êtes à jour",
+    "time": {
+      "justNow": "À l'instant",
+      "minutesAgo": "Il y a {{count}} minute{{count}}",
+      "hoursAgo": "Il y a {{count}} heure{{count}}",
+      "daysAgo": "Il y a {{count}} jour{{count}}"
+    }
   },
   "auth": {
     "login": "Connexion",
@@ -553,6 +571,7 @@
     "unassigned": "Non assigné",
     "noTicketsDesc": "Aucun résultat ne correspond à votre recherche",
     "noTicketsEmpty": "Aucun ticket n'a été créé pour le moment",
+    "noProject": "Aucun projet",
     "bulkDeleteConfirm": "Supprimer {{count}} ticket(s) ?",
     "assignPrompt": "Email de l'utilisateur à assigner:"
   }

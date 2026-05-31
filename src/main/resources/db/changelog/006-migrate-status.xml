@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="006-migrate-status-values" author="liquibase">
+        <comment>Migration des statuts tickets vers nouvelles valeurs: Nouveau, EnCours, EnAttente, Terminé</comment>
+        <update tableName="ticket">
+            <column name="status" value="Nouveau"/>
+            <where>status IN ('ToDo', 'OPEN', 'QUEUED')</where>
+        </update>
+        <update tableName="ticket">
+            <column name="status" value="EnCours"/>
+            <where>status IN ('InProgress', 'IN_PROGRESS')</where>
+        </update>
+        <update tableName="ticket">
+            <column name="status" value="EnAttente"/>
+            <where>status IN ('WaitingForUserResponse', 'WAITING_FOR_USER')</where>
+        </update>
+        <update tableName="ticket">
+            <column name="status" value="Terminé"/>
+            <where>status IN ('Done', 'Closed', 'RESOLVED', 'CLOSED', 'READY_FOR_CLOSURE')</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

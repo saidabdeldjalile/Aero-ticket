@@ -45,10 +45,10 @@ INSERT INTO _user (id, first_name, last_name, email, password, role, registratio
 (26, 'Admin', 'GFC', 'admin.gfc@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'ADMIN', 'GFC001', 5),
 (27, 'Support', 'FIN1', 'support.fin1@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'SUPPORT', 'GFC002', 5),
 (28, 'Support', 'FIN2', 'support.fin2@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'SUPPORT', 'GFC003', 5),
- (29, 'Nadia', 'Said', 'nadia.said@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'USER', 'GFC004', 5),
- (30, 'Rachid', 'Amrani', 'rachid.amrani@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'USER', 'GFC005', 5),
- (31, 'Tarik', 'Mansour', 'tarik.mansour@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'USER', 'GFC006', 5)
- ON CONFLICT (id) DO NOTHING;
+(29, 'Nadia', 'Said', 'nadia.said@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'USER', 'GFC004', 5),
+(30, 'Rachid', 'Amrani', 'rachid.amrani@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'USER', 'GFC005', 5),
+(31, 'Tarik', 'Mansour', 'tarik.mansour@airalgerie.dz', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsW/dW6IO2uF3dxOmy', 'USER', 'GFC006', 5)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- SEED PROJECTS
@@ -62,39 +62,39 @@ INSERT INTO project (id, name, department_id) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
--- SEED TICKETS
+-- SEED TICKETS (UPDATED: 'Open' -> 'Nouveau', no 'Deleted' status)
 -- ============================================================================
-INSERT INTO ticket (id, title, description, status, priority, category, created_at, modified_at, created_by_id, assigned_to_id, project_id) VALUES
-(1, 'Email access issue', 'Cannot access corporate email since this morning. Need immediate assistance.', 'Open', 'High', 'Email', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5, 3, 1),
-(2, 'Printer not working', 'The printer on floor 3 is not printing any documents.', 'InProgress', 'Medium', 'Hardware', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 6, 3, 1),
-(3, 'VPN connection failure', 'Unable to connect to company VPN from home office.', 'Done', 'High', 'Network', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '1 day', 7, 4, 1),
-(4, 'Software installation request', 'Need Adobe Creative Suite installed on workstation.', 'ToDo', 'Low', 'Software', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 5, 4, 1),
-(5, 'Laptop performance issue', 'My laptop is running very slow and frequently freezes.', 'Open', 'Critical', 'Hardware', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6, NULL, 1),
-(6, 'Network outage in Building A', 'No network connectivity in Building A since 8 AM.', 'InProgress', 'Critical', 'Network', CURRENT_TIMESTAMP - INTERVAL '2 hours', CURRENT_TIMESTAMP, 7, 3, 1),
-(7, 'Leave request pending', 'Submitted leave request 2 weeks ago but still not approved.', 'Open', 'Medium', 'Leave', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 11, 9, 2),
-(8, 'Payroll discrepancy', 'My salary this month is different from expected. Need clarification.', 'InProgress', 'High', 'Payroll', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '1 day', 12, 9, 2),
-(9, 'Employee card not working', 'Cannot access building with my employee card since yesterday.', 'Done', 'High', 'Access', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 13, 10, 2),
-(10, 'Training certificate request', 'Need certificate for completed safety training last month.', 'ToDo', 'Low', 'Training', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days', 11, 10, 2),
-(11, 'Contact info update', 'Need to update emergency contact information in the system.', 'Open', 'Low', 'Administrative', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 12, NULL, 2),
-(12, 'ID card request', 'New employee ID card needed for access to terminals.', 'ToDo', 'Medium', 'Administrative', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 13, 9, 2),
-(13, 'Flight scheduling error', 'Several flights showing incorrect departure times in the system.', 'Open', 'High', 'Scheduling', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 17, 15, 3),
-(14, 'Crew scheduling conflict', 'Two crew members assigned to the same flight AH-204.', 'InProgress', 'Critical', 'Crew', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP, 18, 15, 3),
-(15, 'Fuel booking system down', 'Cannot complete fuel booking for tomorrow flights.', 'Done', 'High', 'Fuel', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 19, 16, 3),
-(16, 'Cargo manifest error', 'Cargo loading at Terminal 2 shows wrong weights.', 'ToDo', 'Medium', 'Cargo', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 17, 16, 3),
-(17, 'Weather system outage', 'Weather update system not working. Affects flight planning.', 'Open', 'Critical', 'System', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 18, NULL, 3),
-(18, 'Passenger list discrepancy', 'Passenger manifest does not match check-in records for flight AH-501.', 'InProgress', 'High', 'Passenger', CURRENT_TIMESTAMP - INTERVAL '3 hours', CURRENT_TIMESTAMP, 19, 15, 3),
-(19, 'Engine inspection request', 'Aircraft AT-72 requires scheduled engine inspection.', 'ToDo', 'High', 'Inspection', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 23, 21, 4),
-(20, 'Tool inventory discrepancy', 'Missing tools from maintenance kit. Need replacement.', 'Open', 'Medium', 'Inventory', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 24, 21, 4),
-(21, 'Landing gear warning', 'Landing gear warning light on aircraft BT-45.', 'InProgress', 'Critical', 'Maintenance', CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP, 25, 22, 4),
-(22, 'Avionics system update', 'Need software update for avionics systems on fleet.', 'ToDo', 'Low', 'Software', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '5 days', 23, 22, 4),
-(23, 'Spare parts order', 'Running low on brake pads for A320 fleet.', 'Open', 'High', 'Inventory', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 24, NULL, 4),
-(24, 'Maintenance log error', 'Cannot update maintenance log in the system.', 'Open', 'Medium', 'System', CURRENT_TIMESTAMP - INTERVAL '6 hours', CURRENT_TIMESTAMP, 25, 21, 4),
-(25, 'Expense report rejected', 'My expense report for last month was rejected without explanation.', 'Open', 'Medium', 'Expenses', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 29, 27, 5),
-(26, 'Invoice payment delay', 'Supplier invoice payment is overdue by 30 days.', 'InProgress', 'High', 'Payment', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '1 day', 30, 27, 5),
-(27, 'Budget approval needed', 'Need approval for Q4 budget allocation for new equipment.', 'Done', 'Medium', 'Budget', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '3 days', 31, 28, 5),
-(28, 'Purchase request', 'Need to purchase new accounting software license.', 'ToDo', 'Low', 'Purchase', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days', 29, 28, 5),
-(29, 'Financial report error', 'The monthly financial report shows incorrect figures for revenue.', 'Open', 'Critical', 'Reports', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 30, NULL, 5),
-(30, 'Travel advance request', 'Need travel advance for upcoming business trip to Paris.', 'Open', 'Medium', 'Expenses', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 31, 27, 5)
+INSERT INTO ticket (id, title, description, status, priority, category, issue_type, created_at, modified_at, created_by_id, assigned_to_id, project_id) VALUES
+(1, 'Email access issue', 'Cannot access corporate email since this morning. Need immediate assistance.', 'Nouveau', 'High', 'Email', 'Bug', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 5, 3, 1),
+(2, 'Printer not working', 'The printer on floor 3 is not printing any documents.', 'EnCours', 'Medium', 'Hardware', 'Incident', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 6, 3, 1),
+(3, 'VPN connection failure', 'Unable to connect to company VPN from home office.', 'Terminé', 'High', 'Network', 'Bug', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '1 day', 7, 4, 1),
+(4, 'Software installation request', 'Need Adobe Creative Suite installed on workstation.', 'Nouveau', 'Low', 'Software', 'ServiceRequest', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 5, 4, 1),
+(5, 'Laptop performance issue', 'My laptop is running very slow and frequently freezes.', 'Nouveau', 'Critical', 'Hardware', 'Incident', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 6, NULL, 1),
+(6, 'Network outage in Building A', 'No network connectivity in Building A since 8 AM.', 'EnCours', 'Critical', 'Network', 'Incident', CURRENT_TIMESTAMP - INTERVAL '2 hours', CURRENT_TIMESTAMP, 7, 3, 1),
+(7, 'Leave request pending', 'Submitted leave request 2 weeks ago but still not approved.', 'Nouveau', 'Medium', 'Leave', 'ServiceRequest', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 11, 9, 2),
+(8, 'Payroll discrepancy', 'My salary this month is different from expected. Need clarification.', 'EnCours', 'High', 'Payroll', 'Question', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '1 day', 12, 9, 2),
+(9, 'Employee card not working', 'Cannot access building with my employee card since yesterday.', 'Terminé', 'High', 'Access', 'Incident', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 13, 10, 2),
+(10, 'Training certificate request', 'Need certificate for completed safety training last month.', 'Nouveau', 'Low', 'Training', 'ServiceRequest', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days', 11, 10, 2),
+(11, 'Contact info update', 'Need to update emergency contact information in the system.', 'Nouveau', 'Low', 'Administrative', 'ServiceRequest', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 12, NULL, 2),
+(12, 'ID card request', 'New employee ID card needed for access to terminals.', 'Nouveau', 'Medium', 'Administrative', 'ServiceRequest', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 13, 9, 2),
+(13, 'Flight scheduling error', 'Several flights showing incorrect departure times in the system.', 'Nouveau', 'High', 'Scheduling', 'Bug', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 17, 15, 3),
+(14, 'Crew scheduling conflict', 'Two crew members assigned to the same flight AH-204.', 'EnCours', 'Critical', 'Crew', 'Bug', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP, 18, 15, 3),
+(15, 'Fuel booking system down', 'Cannot complete fuel booking for tomorrow flights.', 'Terminé', 'High', 'Fuel', 'Incident', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 19, 16, 3),
+(16, 'Cargo manifest error', 'Cargo loading at Terminal 2 shows wrong weights.', 'Nouveau', 'Medium', 'Cargo', 'Bug', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 17, 16, 3),
+(17, 'Weather system outage', 'Weather update system not working. Affects flight planning.', 'Nouveau', 'Critical', 'System', 'Incident', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 18, NULL, 3),
+(18, 'Passenger list discrepancy', 'Passenger manifest does not match check-in records for flight AH-501.', 'EnCours', 'High', 'Passenger', 'Bug', CURRENT_TIMESTAMP - INTERVAL '3 hours', CURRENT_TIMESTAMP, 19, 15, 3),
+(19, 'Engine inspection request', 'Aircraft AT-72 requires scheduled engine inspection.', 'Nouveau', 'High', 'Inspection', 'Task', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 23, 21, 4),
+(20, 'Tool inventory discrepancy', 'Missing tools from maintenance kit. Need replacement.', 'Nouveau', 'Medium', 'Inventory', 'Task', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 24, 21, 4),
+(21, 'Landing gear warning', 'Landing gear warning light on aircraft BT-45.', 'EnCours', 'Critical', 'Maintenance', 'Incident', CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP, 25, 22, 4),
+(22, 'Avionics system update', 'Need software update for avionics systems on fleet.', 'Nouveau', 'Low', 'Software', 'Improvement', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '5 days', 23, 22, 4),
+(23, 'Spare parts order', 'Running low on brake pads for A320 fleet.', 'Nouveau', 'High', 'Inventory', 'ServiceRequest', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 24, NULL, 4),
+(24, 'Maintenance log error', 'Cannot update maintenance log in the system.', 'Nouveau', 'Medium', 'System', 'Bug', CURRENT_TIMESTAMP - INTERVAL '6 hours', CURRENT_TIMESTAMP, 25, 21, 4),
+(25, 'Expense report rejected', 'My expense report for last month was rejected without explanation.', 'Nouveau', 'Medium', 'Expenses', 'Question', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 29, 27, 5),
+(26, 'Invoice payment delay', 'Supplier invoice payment is overdue by 30 days.', 'EnCours', 'High', 'Payment', 'ServiceRequest', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '1 day', 30, 27, 5),
+(27, 'Budget approval needed', 'Need approval for Q4 budget allocation for new equipment.', 'Terminé', 'Medium', 'Budget', 'Task', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '3 days', 31, 28, 5),
+(28, 'Purchase request', 'Need to purchase new accounting software license.', 'Nouveau', 'Low', 'Purchase', 'ServiceRequest', CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days', 29, 28, 5),
+(29, 'Financial report error', 'The monthly financial report shows incorrect figures for revenue.', 'Nouveau', 'Critical', 'Reports', 'Bug', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 30, NULL, 5),
+(30, 'Travel advance request', 'Need travel advance for upcoming business trip to Paris.', 'Nouveau', 'Medium', 'Expenses', 'ServiceRequest', CURRENT_TIMESTAMP - INTERVAL '1 day', CURRENT_TIMESTAMP - INTERVAL '1 day', 31, 27, 5)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================

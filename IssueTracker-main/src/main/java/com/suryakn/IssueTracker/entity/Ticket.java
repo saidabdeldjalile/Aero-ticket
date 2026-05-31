@@ -31,6 +31,7 @@ public class Ticket {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+    @Enumerated(EnumType.STRING)
     private Status status;
     private Priority priority;
     private String category;

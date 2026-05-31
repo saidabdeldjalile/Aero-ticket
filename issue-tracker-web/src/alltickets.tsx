@@ -19,7 +19,7 @@ interface PaginatedTickets {
 }
 
 type ViewMode = "table" | "kanban" | "gantt";
-type TicketStatus = "Open" | "ToDo" | "InProgress" | "Done" | "Closed";
+type TicketStatus = "Nouveau" | "EnCours" | "EnAttente" | "Terminé";
 type TicketPriority = "High" | "Medium" | "Low" | "Critical";
 
 interface AdvancedFilters {
@@ -99,10 +99,27 @@ export default function AllTickets() {
       return response.data as PaginatedTickets;
     }
 
-    const response = await api.get("/tickets", {
-      params: { page, size: pageSize, search: searchTerm || undefined },
-    });
-    return response.data as PaginatedTickets;
+    // Use role-based endpoint to filter tickets appropriately
+    if (role === "ADMIN") {
+      // Admin sees all tickets
+      const response = await api.get("/tickets", {
+        params: { page, size: pageSize, search: searchTerm || undefined },
+      });
+      return response.data as PaginatedTickets;
+    } else {
+      // SUPPORT sees department tickets, USER sees only their own tickets
+      const response = await api.get("/tickets/tickets-for-user", {
+        params: {
+          page,
+          size: pageSize,
+          search: searchTerm || undefined,
+          email,
+          role,
+          departmentId: departmentId || undefined
+        },
+      });
+      return response.data as PaginatedTickets;
+    }
   };
 
   const {
@@ -114,7 +131,7 @@ export default function AllTickets() {
   const tickets = useMemo(() => paginatedTickets?.content || [], [paginatedTickets]);
   const totalTickets = paginatedTickets?.totalElements || tickets.length;
 
-  const canDelete = role === "ADMIN";
+  const canDelete = role === "ADMIN" || role === "SUPPORT";
 
   const getPageTitle = () => t("alltickets.title");
   const getPageDescription = () => {
@@ -322,10 +339,9 @@ export default function AllTickets() {
                 }}
               >
                 <option value="">{t('common.all')}</option>
-                <option value="Open">{t('status.open')}</option>
-                <option value="InProgress">{t('status.inProgress')}</option>
-                <option value="Done">{t('status.resolved')}</option>
-                <option value="Closed">{t('status.closed')}</option>
+                <option value="Nouveau">{t('status.nouveau')}</option>
+                <option value="EnCours">{t('status.inProgress')}</option>
+                <option value="Terminé">{t('status.resolved')}</option>
               </select>
             </div>
             <div className="form-control">
@@ -418,6 +434,7 @@ export default function AllTickets() {
                   </th>
                 )}
                 <th>{t('ticket.title')}</th>
+                <th>{t('ticket.issueType')}</th>
                 <th>{t('ticket.project')}</th>
                 <th>{t('ticket.status')}</th>
                 <th>{t('ticket.priority')}</th>
@@ -447,26 +464,33 @@ export default function AllTickets() {
                     </Link>
                   </td>
                   <td>
-                    <Link to={`/projects/${ticket.project.id}/tickets`} className="hover:text-primary transition-colors">
-                      {ticket.project.name}
-                    </Link>
+                    <span className="text-sm">{ticket.issueType || "-"}</span>
                   </td>
                   <td>
-                    <span className={`badge badge-sm ${ticket.status === "Open" ? "badge-info" :
-                        ticket.status === "InProgress" ? "badge-warning" :
-                          ticket.status === "Done" ? "badge-success" :
-                            ticket.status === "Closed" ? "badge-neutral" : "badge-ghost"
+                    {ticket.project ? (
+                      <Link to={`/projects/${ticket.project.id}/tickets`} className="hover:text-primary transition-colors">
+                        {ticket.project.name}
+                      </Link>
+                    ) : (
+                      <span className="text-base-content/40">{t('alltickets.noProject')}</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`badge badge-sm ${ticket.status === "Nouveau" ? "badge-info" :
+                      ticket.status === "EnCours" ? "badge-warning" :
+                        ticket.status === "Terminé" ? "badge-success" :
+                          ticket.status === "EnAttente" ? "badge-neutral" : "badge-ghost"
                       }`}>
-                      {ticket.status === "Open" ? t('status.open') :
-                        ticket.status === "InProgress" ? t('status.inProgress') :
-                          ticket.status === "Done" ? t('status.resolved') :
-                            ticket.status === "Closed" ? t('status.closed') : ticket.status}
+                      {ticket.status === "Nouveau" ? t('status.nouveau') :
+                        ticket.status === "EnCours" ? t('status.inProgress') :
+                          ticket.status === "Terminé" ? t('status.done') :
+                            ticket.status === "EnAttente" ? "En attente" : ticket.status}
                     </span>
                   </td>
                   <td>
                     <span className={`badge badge-sm ${ticket.priority === "High" ? "badge-error" :
-                        ticket.priority === "Medium" ? "badge-warning" :
-                          ticket.priority === "Critical" ? "badge-error" : "badge-success"
+                      ticket.priority === "Medium" ? "badge-warning" :
+                        ticket.priority === "Critical" ? "badge-error" : "badge-success"
                       }`}>
                       {ticket.priority === "Critical" ? t('priority.critical') :
                         ticket.priority === "High" ? t('priority.high') :

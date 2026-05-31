@@ -24,7 +24,7 @@ CORS(app)
 OLLAMA_URL   = os.environ.get("OLLAMA_URL",   "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:1.5b")
 OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "15"))
-FAQ_SIMILARITY_THRESHOLD = float(os.environ.get("FAQ_SIMILARITY_THRESHOLD", "0.5"))
+FAQ_SIMILARITY_THRESHOLD = float(os.environ.get("FAQ_SIMILARITY_THRESHOLD", "0.75"))
 _RAW_BACKEND_URL = os.environ.get("BACKEND_URL", "http://localhost:6969")
 
 def _normalise_backend_base(url: str) -> str:

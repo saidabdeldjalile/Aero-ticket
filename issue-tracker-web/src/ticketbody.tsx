@@ -126,13 +126,13 @@ export function TicketBody({ ticket }: TicketBodyProps) {
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800">
                 <Calendar className="w-4 h-4 text-gray-500" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                   {new Date(ticket?.createdAt || Date.now()).toLocaleDateString()}
+                  {new Date(ticket?.createdAt || Date.now()).toLocaleDateString()}
                 </span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800">
                 <User className="w-4 h-4 text-gray-500" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                   {ticket?.created?.firstName} {ticket?.created?.lastname}
+                  {ticket?.created?.firstName} {ticket?.created?.lastname}
                 </span>
               </div>
             </div>
@@ -140,28 +140,31 @@ export function TicketBody({ ticket }: TicketBodyProps) {
         </div>
 
         {/* Meta Information */}
-        <div className="px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 dark:bg-gray-800/30">
+        <div className="px-6 py-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 bg-gray-50 dark:bg-gray-800/30">
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Statut</div>
-            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-              ticket?.status === "Open" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-              ticket?.status === "InProgress" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
-              ticket?.status === "Done" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-              "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-            }`}>
+            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${ticket?.status === "Nouveau" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+              ticket?.status === "EnCours" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
+                ticket?.status === "Terminé" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                  ticket?.status === "EnAttente" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+              }`}>
               {ticket?.status}
             </span>
           </div>
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Priorité</div>
-            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-              ticket?.priority === "Critical" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${ticket?.priority === "Critical" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
               ticket?.priority === "High" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
-              ticket?.priority === "Medium" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-              "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-            }`}>
+                ticket?.priority === "Medium" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                  "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+              }`}>
               {ticket?.priority}
             </span>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Type</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">{ticket?.issueType || "Non défini"}</div>
           </div>
           <div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Catégorie</div>
@@ -264,11 +267,11 @@ export function TicketBody({ ticket }: TicketBodyProps) {
           </div>
         </div>
         <div className="p-6">
-          <Comments 
-            addComment={addComment} 
-            deleteComment={deleteComment} 
-            comments={comments} 
-            ticketId={ticket?.id} 
+          <Comments
+            addComment={addComment}
+            deleteComment={deleteComment}
+            comments={comments}
+            ticketId={ticket?.id}
           />
         </div>
       </div>

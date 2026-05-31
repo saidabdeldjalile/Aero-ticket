@@ -190,6 +190,15 @@ public class TicketController {
     // ==================== KANBAN VIEW ====================
 
     /**
+     * Get tickets without a project (for admin orientation)
+     */
+    @GetMapping("/unassigned")
+    public ResponseEntity<List<TicketResponse>> getUnassignedTickets() {
+        log.info("Fetching tickets without project assignment");
+        return ticketService.getUnassignedTickets();
+    }
+
+    /**
      * Get tickets grouped by status for Kanban board
      */
     @GetMapping("/kanban")

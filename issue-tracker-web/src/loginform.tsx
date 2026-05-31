@@ -48,15 +48,15 @@ function Loginform() {
       return;
     }
 
-     try {
-       const res = await axios.post(
-         `${config.authUrl}/login`,
-         { email, password, rememberMe },
-         {
-           headers: { "Content-Type": "application/json" },
-           timeout: 10000,
-         }
-       );
+    try {
+      const res = await axios.post(
+        `${config.authUrl}/login`,
+        { email, password, rememberMe },
+        {
+          headers: { "Content-Type": "application/json" },
+          timeout: 10000,
+        }
+      );
 
       if (!res.data || !res.data.token) {
         throw new Error("Invalid response from server - missing token");
@@ -118,10 +118,10 @@ function Loginform() {
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-red-950 to-gray-900">
         <div className="absolute inset-0 bg-[url('/images/GFC-login-background.jpg')] bg-cover bg-center opacity-10"></div>
-        
+
         {/* Animated Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:32px_32px]"></div>
-        
+
         {/* Floating Red Particles / Blobs */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-72 h-72 bg-red-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
@@ -134,7 +134,7 @@ function Loginform() {
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-6xl animate-scaleUp">
           <div className="grid lg:grid-cols-2 gap-0 bg-white/5 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl border border-white/20">
-            
+
             {/* Left Side - Brand Section with Animation */}
             <div className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-red-600/20 via-red-800/10 to-gray-900/40 relative overflow-hidden">
               <div className="relative z-10 animate-slideInRight">
@@ -142,13 +142,13 @@ function Loginform() {
                 <div className="mb-10">
                   <div className="bg-white rounded-2xl p-4 inline-block shadow-lg">
                     <img
-                      src="/images/Logo_Air_Algérie.png"
+                      src="/images/air-algerie-logo.png"
                       alt="Air Algeria Logo"
                       className="h-14 w-auto object-contain"
                     />
                   </div>
                 </div>
-                
+
                 {/* Tagline */}
                 <div className="mb-6">
                   <div className="inline-flex items-center gap-2 rounded-full bg-red-600/20 backdrop-blur-sm px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-red-100 shadow-sm">
@@ -156,19 +156,19 @@ function Loginform() {
                     Air Algérie Issue Tracker
                   </div>
                 </div>
-                
+
                 <h2 className="text-4xl font-black text-white mb-4 leading-tight">
-                  Gérez vos incidents<br/>
+                  Gérez vos incidents<br />
                   <span className="text-red-500">
                     en toute sécurité
                   </span>
                 </h2>
-                
+
                 <p className="text-white/70 text-base leading-relaxed mb-8">
-                  Une plateforme centralisée pour suivre, prioriser et résoudre 
+                  Une plateforme centralisée pour suivre, prioriser et résoudre
                   l'ensemble de vos tickets techniques et demandes avec Air Algérie.
                 </p>
-                
+
                 {/* Stats Section */}
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <div className="text-center">
@@ -184,7 +184,7 @@ function Loginform() {
                     <div className="text-xs text-white/60">Projets</div>
                   </div>
                 </div>
-                
+
                 {/* Features List */}
                 <div className="space-y-3">
                   {[
@@ -199,14 +199,14 @@ function Loginform() {
                   ))}
                 </div>
               </div>
-              
+
               {/* Footer */}
               <div className="relative z-10 mt-8 pt-8 border-t border-white/10">
                 <p className="text-white/40 text-[10px] text-center uppercase tracking-widest">
                   © 2024 Air Algérie Issue Tracker
                 </p>
               </div>
-              
+
               {/* Decorative Elements */}
               <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-gradient-to-br from-red-500 to-red-800 rounded-full blur-3xl opacity-30"></div>
               <div className="absolute top-1/2 -left-20 w-48 h-48 bg-red-600 rounded-full blur-3xl opacity-20"></div>
@@ -276,9 +276,9 @@ function Loginform() {
                     />
                     <span className="text-sm text-gray-600 dark:text-gray-400">Se souvenir de moi</span>
                   </label>
-<a href="/forgot-password" className="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
-                     Mot de passe oublié ?
-                   </a>
+                  <a href="/forgot-password" className="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
+                    Mot de passe oublié ?
+                  </a>
                 </div>
 
                 {/* Submit Button */}
@@ -312,8 +312,8 @@ function Loginform() {
 
                 {/* Register Link */}
                 <div className="text-center">
-                  <Link 
-                    to="/register" 
+                  <Link
+                    to="/register"
                     className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-700 font-semibold transition-colors group"
                   >
                     Créer un compte

@@ -18,7 +18,6 @@ interface IssueType {
   project: string;
   title: string;
   description: string;
-  status: string;
   priority: string;
   category: string;
   label: string;
@@ -58,7 +57,6 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
     project: "",
     title: "",
     description: "",
-    status: "",
     priority: "",
     category: "",
     label: "",
@@ -120,7 +118,6 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
       project: "",
       title: "",
       description: "",
-      status: "",
       priority: "",
       category: "",
       label: "",
@@ -213,9 +210,9 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
         project: Number(newIssue.project),
         title: newIssue.title,
         description: newIssue.description,
-        status: newIssue.status,
         priority: newIssue.priority,
         category: newIssue.category,
+        issueType: newIssue.issueType || undefined,
         reporter: newIssue.reporter || auth?.email,
         assignee: newIssue.assignee || null,
       });
@@ -317,30 +314,13 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             <option value="Feature">{t('createTicket.types.feature', { default: 'Feature' })}</option>
             <option value="Task">{t('createTicket.types.task', { default: 'Task' })}</option>
             <option value="Improvement">{t('createTicket.types.improvement', { default: 'Improvement' })}</option>
+            <option value="Incident">{t('createTicket.types.incident', { default: 'Incident' })}</option>
+            <option value="ServiceRequest">{t('createTicket.types.serviceRequest', { default: 'Service Request' })}</option>
+            <option value="Question">{t('createTicket.types.question', { default: 'Question' })}</option>
+            <option value="Change">{t('createTicket.types.change', { default: 'Change' })}</option>
           </select>
         </label>
 
-        <label className="form-control w-full max-w-xs p-3">
-          <div className="label">
-            <span className="label-text">{t('ticket.status')}</span>
-          </div>
-          <select
-            name="status"
-            value={newIssue.status}
-            onChange={(e) => handleChange(e)}
-            className="select select-bordered"
-          >
-            <option value="" disabled>
-              {t('createTicket.selectStatus')}
-            </option>
-            <option value="Open">{t('status.open')}</option>
-            <option value="ToDo">{t('status.pending')}</option>
-            <option value="InProgress">{t('status.inProgress')}</option>
-            <option value="WaitingForUserResponse">{t('status.pending')}</option>
-            <option value="Done">{t('status.resolved')}</option>
-            <option value="Closed">{t('status.closed')}</option>
-          </select>
-        </label>
         <label className="form-control w-full max-w-xs p-3">
           <div className="label">
             <span className="label-text">{t('ticket.priority')}</span>

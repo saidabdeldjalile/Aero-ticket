@@ -33,6 +33,7 @@ export default function Settings() {
   const { auth } = useAuth();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile>(EMPTY_PROFILE);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(true);
@@ -60,12 +61,12 @@ export default function Settings() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (password && password !== confirmPassword) {
       toast.error("Les mots de passe ne correspondent pas");
       return;
     }
-    
+
     setSaving(true);
 
     try {
@@ -75,6 +76,7 @@ export default function Settings() {
           email: profile.email,
           firstName: profile.firstName,
           lastName: profile.lastName,
+          currentPassword: currentPassword || undefined,
           password: password || undefined,
         },
         {
@@ -96,11 +98,18 @@ export default function Settings() {
       );
 
       toast.success("Profil mis à jour avec succès");
+      setCurrentPassword("");
       setPassword("");
       setConfirmPassword("");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
-      toast.error("Erreur lors de la mise à jour");
+      if (error?.response?.status === 401) {
+        toast.error("Mot de passe actuel incorrect");
+      } else if (error?.response?.status === 400) {
+        toast.error("Veuillez fournir votre mot de passe actuel");
+      } else {
+        toast.error("Erreur lors de la mise à jour");
+      }
     } finally {
       setSaving(false);
     }
@@ -178,22 +187,20 @@ export default function Settings() {
             <div className="p-2">
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                  activeTab === "profile"
-                    ? "bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/30 dark:to-gray-900/30 text-red-600 dark:text-red-400"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "profile"
+                  ? "bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/30 dark:to-gray-900/30 text-red-600 dark:text-red-400"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
               >
                 <User className="w-4 h-4" />
                 <span className="font-medium">Informations personnelles</span>
               </button>
               <button
                 onClick={() => setActiveTab("security")}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                  activeTab === "security"
-                    ? "bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/30 dark:to-gray-900/30 text-red-600 dark:text-red-400"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === "security"
+                  ? "bg-gradient-to-r from-red-50 to-red-100 dark:from-red-950/30 dark:to-gray-900/30 text-red-600 dark:text-red-400"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
               >
                 <Lock className="w-4 h-4" />
                 <span className="font-medium">Sécurité</span>
@@ -225,9 +232,9 @@ export default function Settings() {
                 {activeTab === "profile" ? "Informations personnelles" : "Sécurité du compte"}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {activeTab === "profile" 
-                  ? "Modifiez vos informations personnelles" 
-                  : "Mettez à jour votre mot de passe"}
+                {activeTab === "profile"
+                  ? "Modifiez vos informations personnelles"
+                  : "Saisissez votre nouveau mot de passe"}
               </p>
             </div>
 
@@ -296,6 +303,22 @@ export default function Settings() {
                     </div>
                     <input
                       type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      placeholder="Mot de passe actuel"
+                    />
+                    <label className="absolute -top-2 left-3 px-1 text-xs bg-white dark:bg-gray-900 text-gray-500">
+                      Mot de passe actuel
+                    </label>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <Lock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
@@ -343,6 +366,7 @@ export default function Settings() {
                 <button
                   type="button"
                   onClick={() => {
+                    setCurrentPassword("");
                     setPassword("");
                     setConfirmPassword("");
                   }}

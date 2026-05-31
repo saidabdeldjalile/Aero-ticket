@@ -314,39 +314,44 @@ public class TicketService {
         UserEntity reporter = ticket.getCreatedBy();
         
         switch (currentStatus) {
-            case Open:
-                // OPEN -> TO DO: Only Admin can validate
-                if (newStatus == Status.ToDo) {
-                    return modifier != null && modifier.getRole() == Role.ADMIN;
+            case Nouveau:
+                // NOUVEAU -> EN COURS: Admin, Support or assigned user can start work
+                if (newStatus == Status.EnCours) {
+                    return modifier != null && (
+                        modifier.getRole() == Role.ADMIN ||
+                        modifier.getRole() == Role.SUPPORT ||
+                        (ticket.getAssignedTo() != null && ticket.getAssignedTo().getId().equals(modifier.getId()))
+                    );
                 }
                 break;
                 
-            case ToDo:
-                // TO DO -> IN PROGRESS: Only assigned Support agent can start work
-                if (newStatus == Status.InProgress) {
-                    return modifier != null && 
-                           modifier.getRole() == Role.SUPPORT && 
-                           ticket.getAssignedTo() != null && 
-                           ticket.getAssignedTo().getId().equals(modifier.getId());
+            case EnCours:
+                // EN COURS -> EN ATTENTE: Admin, Support or assigned user can pause work
+                if (newStatus == Status.EnAttente) {
+                    return modifier != null && (
+                        modifier.getRole() == Role.ADMIN ||
+                        modifier.getRole() == Role.SUPPORT ||
+                        (ticket.getAssignedTo() != null && ticket.getAssignedTo().getId().equals(modifier.getId()))
+                    );
+                }
+                // EN COURS -> TERMINE: Admin, Support or assigned user can complete work
+                if (newStatus == Status.Termine) {
+                    return modifier != null && (
+                        modifier.getRole() == Role.ADMIN ||
+                        modifier.getRole() == Role.SUPPORT ||
+                        (ticket.getAssignedTo() != null && ticket.getAssignedTo().getId().equals(modifier.getId()))
+                    );
                 }
                 break;
                 
-            case InProgress:
-                // IN PROGRESS -> DONE: Only assigned Support agent can mark as finished
-                if (newStatus == Status.Done) {
-                    return modifier != null && 
-                           modifier.getRole() == Role.SUPPORT && 
-                           ticket.getAssignedTo() != null && 
-                           ticket.getAssignedTo().getId().equals(modifier.getId());
-                }
-                break;
-                
-            case Done:
-                // DONE -> CLOSED: Only Admin or Reporter can confirm and archive
-                if (newStatus == Status.Closed) {
-                    return modifier != null && 
-                           (modifier.getRole() == Role.ADMIN || 
-                            (reporter != null && reporter.getId().equals(modifier.getId())));
+            case EnAttente:
+                // EN ATTENTE -> EN COURS: Admin, Support or assigned user can resume work
+                if (newStatus == Status.EnCours) {
+                    return modifier != null && (
+                        modifier.getRole() == Role.ADMIN ||
+                        modifier.getRole() == Role.SUPPORT ||
+                        (ticket.getAssignedTo() != null && ticket.getAssignedTo().getId().equals(modifier.getId()))
+                    );
                 }
                 break;
         }
@@ -490,7 +495,7 @@ public class TicketService {
 
     @Transactional
     public void deleteTicket(Long id) {
-        // Logical deletion - change status to DELETED instead of physical deletion
+        // Logical deletion - change status to Deleted instead of physical deletion
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isPresent()) {
             Ticket ticket = optionalTicket.get();

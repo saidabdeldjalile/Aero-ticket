@@ -99,7 +99,7 @@ class CommentServiceTest {
                 .id(1L)
                 .title("Test Ticket")
                 .description("Test Description")
-                .status(Status.Open)
+                .status(Status.Nouveau)
                 .priority(Priority.High)
                 .category("Bug")
                 .createdBy(testUser)
@@ -327,7 +327,7 @@ class CommentServiceTest {
         ResponseEntity<String> response = commentService.deleteComment(1L, otherEmail);
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        verify(commentRepository, never()).delete(any());
+        verify(commentRepository, never()).delete((Comment) any());
     }
 
     @Test
@@ -338,7 +338,7 @@ class CommentServiceTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("Comment not found", response.getBody());
-        verify(commentRepository, never()).delete(any());
+        verify(commentRepository, never()).delete((Comment) any());
     }
 
     @Test

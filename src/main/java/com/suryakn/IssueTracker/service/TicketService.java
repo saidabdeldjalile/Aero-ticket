@@ -17,7 +17,7 @@ import com.suryakn.IssueTracker.repository.ProjectRepository;
 import com.suryakn.IssueTracker.repository.TicketRepository;
 import com.suryakn.IssueTracker.repository.UserRepository;
 import com.suryakn.IssueTracker.repository.VectorTableRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -151,6 +151,7 @@ public class TicketService {
             ticket.getCreatedBy().getEmail(), ticket.getId(), modifier.getEmail());
     }
 
+    @Transactional(readOnly = true)
     public ResponseEntity<Page<TicketResponse>> getAllTickets(Pageable pageable, String search) {
         Page<Ticket> ticketPage;
         if (search != null && !search.isBlank()) {
@@ -165,6 +166,7 @@ public class TicketService {
         return ResponseEntity.ok(new PageImpl<>(ticketResponses, pageable, ticketPage.getTotalElements()));
     }
 
+    @Transactional(readOnly = true)
     public ResponseEntity<TicketResponse> getTicketById(Long id) {
         Optional<Ticket> optionalTicket = ticketRepository.findById(id);
         if (optionalTicket.isEmpty()) {
@@ -186,19 +188,19 @@ public class TicketService {
                 return ResponseEntity.badRequest().build();
             }
             
-            if (ticketRequest.getProject() == null) {
-                log.error("Ticket creation failed - Project is required");
-                return ResponseEntity.badRequest().build();
+            // Validate project exists (optional for chatbot-generated tickets)
+            Project project = null;
+            if (ticketRequest.getProject() != null) {
+                var projectOpt = projectRepository.findById(ticketRequest.getProject());
+                if (projectOpt.isEmpty()) {
+                    log.error("Ticket creation failed - Project not found: {}", ticketRequest.getProject());
+                    return ResponseEntity.badRequest().build();
+                }
+                project = projectOpt.get();
+                log.info("Found project: {}", project.getName());
+            } else {
+                log.info("No project specified - ticket will need admin orientation");
             }
-            
-            // Validate project exists
-            var projectOpt = projectRepository.findById(ticketRequest.getProject());
-            if (projectOpt.isEmpty()) {
-                log.error("Ticket creation failed - Project not found: {}", ticketRequest.getProject());
-                return ResponseEntity.badRequest().build();
-            }
-            Project project = projectOpt.get();
-            log.info("Found project: {}", project.getName());
             
             // Handle reporter - use provided email or first user as fallback
             UserEntity userEntity;
@@ -233,11 +235,11 @@ public class TicketService {
             }
             
             // Default values
-            Status defaultStatus = ticketRequest.getStatus() != null ? ticketRequest.getStatus() : Status.Open;
+            Status defaultStatus = ticketRequest.getStatus() != null ? ticketRequest.getStatus() : Status.Nouveau;
             Priority defaultPriority = ticketRequest.getPriority() != null ? ticketRequest.getPriority() : Priority.Medium;
             String defaultCategory = ticketRequest.getCategory() != null ? ticketRequest.getCategory() : "Autre";
-            Department routedDepartment = project.getDepartment();
-            String routingReason = "Projet sélectionné par l'utilisateur.";
+            Department routedDepartment = project != null ? project.getDepartment() : null;
+            String routingReason = project != null ? "Projet sélectionné par l'utilisateur." : "Ticket généré par chatbot - en attente d'orientation par l'admin.";
             
             // Classification auto - si category non spécifiée
             ClassificationResponse classification = null;
@@ -260,10 +262,21 @@ public class TicketService {
                                 Department dept = suggestedDept.get();
                                 routedDepartment = dept;
                                 routingReason = "Routage IA selon catégorie '" + defaultCategory + "' vers " + dept.getName() + ".";
-                                if (project.getDepartment() == null && !dept.getProjects().isEmpty()) {
-                                    project = dept.getProjects().get(0);
-                                    log.info("Auto-routing: ticket routed to project '{}' in department '{}'", 
-                                        project.getName(), dept.getName());
+                            }
+                        }
+                        
+                        // Suggestion automatique de projet basée sur la catégorie
+                        // (pour les tickets chatbot créés sans projet)
+                        if (project == null) {
+                            var suggestedProject = routingService.findSuggestedProjectByCategory(defaultCategory);
+                            if (suggestedProject.isPresent()) {
+                                project = suggestedProject.get();
+                                log.info("Auto-suggestion: ticket routed to project '{}' (id={}) based on category '{}'", 
+                                    project.getName(), project.getId(), defaultCategory);
+                                routingReason = "Projet suggéré automatiquement selon la catégorie '" + defaultCategory + "'.";
+                                // Update routedDepartment to match the project's department
+                                if (project.getDepartment() != null) {
+                                    routedDepartment = project.getDepartment();
                                 }
                             }
                         }
@@ -276,8 +289,23 @@ public class TicketService {
                 }
             }
             
+            // If still no project after classification, try suggestion by final category
+            if (project == null) {
+                var suggestedProject = routingService.findSuggestedProjectByCategory(defaultCategory);
+                if (suggestedProject.isPresent()) {
+                    project = suggestedProject.get();
+                    log.info("Auto-suggestion (post-classification): ticket routed to project '{}' (id={})", 
+                        project.getName(), project.getId());
+                    routingReason = "Projet suggéré automatiquement selon la catégorie '" + defaultCategory + "'.";
+                    if (routedDepartment == null && project.getDepartment() != null) {
+                        routedDepartment = project.getDepartment();
+                    }
+                }
+            }
+            
             if (routedDepartment == null) {
-                routedDepartment = routingService.findDepartmentByClassification(defaultCategory).orElse(project.getDepartment());
+                routedDepartment = routingService.findDepartmentByClassification(defaultCategory)
+                    .orElse(project != null ? project.getDepartment() : null);
                 if (routingReason == null || routingReason.isBlank()) {
                     routingReason = "Routage métier basé sur la catégorie " + defaultCategory + ".";
                 }
@@ -321,6 +349,7 @@ public class TicketService {
                 .status(defaultStatus)
                 .priority(defaultPriority)
                 .category(defaultCategory)
+                .issueType(ticketRequest.getIssueType())
                 .routedDepartmentName(routedDepartment != null ? routedDepartment.getName() : null)
                 .routingReason(routingReason)
                 .workflowStage(determineWorkflowStage(defaultStatus))
@@ -354,7 +383,7 @@ public class TicketService {
                 
                 // Notifications - safe
                 try {
-                    if (project.getDepartment() != null) {
+                    if (project != null && project.getDepartment() != null) {
                         notificationService.notifyDepartmentUsers(
                             NotificationType.TICKET_CREATED,
                             "Nouveau ticket créé",
@@ -370,7 +399,7 @@ public class TicketService {
                             "Ticket vous a été assigné",
                             "Le ticket '" + newTicket.getTitle() + "' vous a été assigné",
                             assignee,
-                            project.getDepartment(),
+                            project != null ? project.getDepartment() : null,
                             newTicket.getId()
                         );
                     }
@@ -433,6 +462,9 @@ public class TicketService {
             if (ticketRequest.getCategory() != null) {
                 ticket.setCategory(ticketRequest.getCategory());
             }
+            if (ticketRequest.getIssueType() != null) {
+                ticket.setIssueType(ticketRequest.getIssueType());
+            }
             ticketRepository.save(ticket);
             return ResponseEntity.ok(getTicketResponse(ticket));
         }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -459,6 +491,9 @@ public class TicketService {
             if (updateRequest.getCategory() != null) {
                 ticket.setCategory(updateRequest.getCategory());
             }
+            if (updateRequest.getIssueType() != null) {
+                ticket.setIssueType(updateRequest.getIssueType());
+            }
             if (updateRequest.getAssignee() != null && !updateRequest.getAssignee().isEmpty()) {
                 Optional<UserEntity> user = userRepository.findByEmail(updateRequest.getAssignee());
                 user.ifPresent(ticket::setAssignedTo);
@@ -475,6 +510,21 @@ public class TicketService {
             if (ticket.getAssignedTo() != null && ticket.getRoutedDepartmentName() == null && ticket.getAssignedTo().getDepartment() != null) {
                 ticket.setRoutedDepartmentName(ticket.getAssignedTo().getDepartment().getName());
             }
+            
+            // Handle project assignment (admin orientation of chatbot tickets)
+            if (updateRequest.getProjectId() != null) {
+                var projectOpt = projectRepository.findById(updateRequest.getProjectId());
+                if (projectOpt.isPresent()) {
+                    Project newProject = projectOpt.get();
+                    ticket.setProject(newProject);
+                    ticket.setRoutedDepartmentName(newProject.getDepartment() != null ? newProject.getDepartment().getName() : null);
+                    ticket.setRoutingReason("Projet assigné par l'admin: " + newProject.getName());
+                    log.info("Ticket {} assigned to project '{}' by admin", id, newProject.getName());
+                } else {
+                    log.warn("Cannot assign project to ticket {}: project {} not found", id, updateRequest.getProjectId());
+                }
+            }
+            
             ticketRepository.save(ticket);
             
             // Notify about status change
@@ -674,6 +724,7 @@ public class TicketService {
                 .description(ticket.getDescription())
                 .status(ticket.getStatus())
                 .priority(ticket.getPriority())
+                .issueType(ticket.getIssueType())
                 .category(ticket.getCategory())
                 .routedDepartmentName(ticket.getRoutedDepartmentName())
                 .routingReason(ticket.getRoutingReason())
@@ -709,24 +760,21 @@ public class TicketService {
             return 0;
         }
         return (int) user.getAssignedTickets().stream()
-                .filter(ticket -> ticket.getStatus() != Status.Done && ticket.getStatus() != Status.Closed && ticket.getStatus() != Status.Deleted)
+                .filter(ticket -> ticket.getStatus() != Status.Terminé)
                 .count();
     }
 
-    private String determineWorkflowStage(Status status) {
-        if (status == null) {
-            return "TRIAGE";
-        }
-        return switch (status) {
-            case Open -> "TRIAGE";
-            case ToDo -> "QUEUED";
-            case InProgress -> "IN_PROGRESS";
-            case WaitingForUserResponse -> "WAITING_FOR_USER";
-            case Done -> "READY_FOR_CLOSURE";
-            case Closed -> "CLOSED";
-            case Deleted -> "CANCELLED";
-        };
-    }
+     private String determineWorkflowStage(Status status) {
+         if (status == null) {
+             return "TRIAGE";
+         }
+         return switch (status) {
+             case Nouveau -> "TRIAGE";
+             case EnCours -> "IN_PROGRESS";
+             case EnAttente -> "WAITING_FOR_USER";
+             case Terminé -> "CLOSED";
+         };
+     }
 
     private LocalDateTime calculateFirstResponseDueAt(Priority priority) {
         LocalDateTime now = LocalDateTime.now();
@@ -776,7 +824,12 @@ public class TicketService {
             // Apply pagination manually since we're working with a list
             int start = (int) pageable.getOffset();
             int end = Math.min((start + pageable.getPageSize()), tickets.size());
-            List<Ticket> paginatedTickets = tickets.subList(start, end);
+            List<Ticket> paginatedTickets;
+            if (start >= tickets.size()) {
+                paginatedTickets = new ArrayList<>();
+            } else {
+                paginatedTickets = tickets.subList(start, end);
+            }
             
             ticketResponses = new ArrayList<>();
             for (Ticket ticket : paginatedTickets) {
@@ -843,7 +896,12 @@ public class TicketService {
         // Apply pagination manually since we're working with a list
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), tickets.size());
-        List<Ticket> paginatedTickets = tickets.subList(start, end);
+        List<Ticket> paginatedTickets;
+        if (start >= tickets.size()) {
+            paginatedTickets = new ArrayList<>();
+        } else {
+            paginatedTickets = tickets.subList(start, end);
+        }
         
         List<TicketResponse> ticketResponses = new ArrayList<>();
         for (Ticket ticket : paginatedTickets) {
@@ -877,7 +935,12 @@ public class TicketService {
         // Apply pagination manually since we're working with a list
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), tickets.size());
-        List<Ticket> paginatedTickets = tickets.subList(start, end);
+        List<Ticket> paginatedTickets;
+        if (start >= tickets.size()) {
+            paginatedTickets = new ArrayList<>();
+        } else {
+            paginatedTickets = tickets.subList(start, end);
+        }
         
         List<TicketResponse> ticketResponses = new ArrayList<>();
         for (Ticket ticket : paginatedTickets) {
@@ -948,7 +1011,12 @@ public class TicketService {
         // Apply pagination manually since we're working with a list
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), tickets.size());
-        List<Ticket> paginatedTickets = tickets.subList(start, end);
+        List<Ticket> paginatedTickets;
+        if (start >= tickets.size()) {
+            paginatedTickets = new ArrayList<>();
+        } else {
+            paginatedTickets = tickets.subList(start, end);
+        }
         
         List<TicketResponse> ticketResponses = new ArrayList<>();
         for (Ticket ticket : paginatedTickets) {
@@ -1036,13 +1104,29 @@ public class TicketService {
         // Apply pagination
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), tickets.size());
-        List<Ticket> paginatedTickets = tickets.subList(start, end);
+        List<Ticket> paginatedTickets;
+        if (start >= tickets.size()) {
+            paginatedTickets = new ArrayList<>();
+        } else {
+            paginatedTickets = tickets.subList(start, end);
+        }
         
         List<TicketResponse> ticketResponses = new ArrayList<>();
         for (Ticket ticket : paginatedTickets) {
             ticketResponses.add(getTicketResponse(ticket));
         }
         return ResponseEntity.ok(new PageImpl<>(ticketResponses, pageable, tickets.size()));
+    }
+
+    // ==================== UNASSIGNED TICKETS (ADMIN ORIENTATION) ====================
+
+    public ResponseEntity<List<TicketResponse>> getUnassignedTickets() {
+        List<Ticket> tickets = ticketRepository.findByProjectIsNull();
+        List<TicketResponse> responses = tickets.stream()
+            .map(this::getTicketResponse)
+            .collect(Collectors.toList());
+        log.info("Found {} tickets without project assignment", responses.size());
+        return ResponseEntity.ok(responses);
     }
 
     // ==================== BULK ACTIONS ====================
@@ -1091,10 +1175,6 @@ public class TicketService {
                 .collect(Collectors.toList());
         }
         
-        // Exclude deleted tickets
-        tickets = tickets.stream()
-            .filter(t -> t.getStatus() != Status.Deleted)
-            .collect(Collectors.toList());
         
         // Group by status
         Map<Status, List<Ticket>> groupedTickets = tickets.stream()
@@ -1103,13 +1183,11 @@ public class TicketService {
         // Create response with columns for each status
         Map<String, Object> response = new HashMap<>();
         for (Status status : Status.values()) {
-            if (status != Status.Deleted) {
-                List<Ticket> statusTickets = groupedTickets.getOrDefault(status, new ArrayList<>());
-                List<TicketResponse> ticketResponses = statusTickets.stream()
-                    .map(this::getTicketResponse)
-                    .collect(Collectors.toList());
-                response.put(status.name(), ticketResponses);
-            }
+            List<Ticket> statusTickets = groupedTickets.getOrDefault(status, new ArrayList<>());
+            List<TicketResponse> ticketResponses = statusTickets.stream()
+                .map(this::getTicketResponse)
+                .collect(Collectors.toList());
+            response.put(status.name(), ticketResponses);
         }
         
         return ResponseEntity.ok(response);

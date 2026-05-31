@@ -60,7 +60,12 @@ public class ProjectService {
         // Apply pagination manually since we're working with a list
         int start = (int) Math.min(pageable.getOffset(), projectList.size());
         int end = Math.min((start + pageable.getPageSize()), projectList.size());
-        List<Project> paginatedProjects = projectList.subList(start, end);
+        List<Project> paginatedProjects;
+        if (start >= projectList.size()) {
+            paginatedProjects = new ArrayList<>();
+        } else {
+            paginatedProjects = projectList.subList(start, end);
+        }
         
         List<ProjectDto> projectDtoList = new ArrayList<>();
         for (Project project : paginatedProjects) {

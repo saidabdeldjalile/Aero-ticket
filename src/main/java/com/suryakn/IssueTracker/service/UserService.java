@@ -172,7 +172,14 @@ public class UserService {
             user.setLastName(request.getLastName());
         }
         
+        // Validate current password if attempting to change password
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            if (request.getCurrentPassword() == null || request.getCurrentPassword().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         

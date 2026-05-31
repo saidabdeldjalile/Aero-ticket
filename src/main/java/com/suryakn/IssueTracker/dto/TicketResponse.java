@@ -1,5 +1,6 @@
 package com.suryakn.IssueTracker.dto;
 
+import com.suryakn.IssueTracker.entity.IssueType;
 import com.suryakn.IssueTracker.entity.Priority;
 import com.suryakn.IssueTracker.entity.Status;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class TicketResponse {
     private String description;
     private Status status;
     private Priority priority;
+    private IssueType issueType;
     private String category;
     private List<CommentDto> comments;
     // attachments removed

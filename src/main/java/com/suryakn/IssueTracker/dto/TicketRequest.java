@@ -1,5 +1,6 @@
 package com.suryakn.IssueTracker.dto;
 
+import com.suryakn.IssueTracker.entity.IssueType;
 import com.suryakn.IssueTracker.entity.Priority;
 import com.suryakn.IssueTracker.entity.Status;
 import jakarta.validation.constraints.Email;
@@ -40,11 +41,8 @@ public class TicketRequest {
     @Email(message = "Assignee email must be valid")
     private String assignee;
 
-    @Size(max = 50, message = "IssueType must not exceed 50 characters")
-    private String issueType;
+    private IssueType issueType;
 
-    @NotNull(message = "Project is required")
-    @Positive(message = "Project ID must be positive")
     private Long project;
 
     private List<String> tags;

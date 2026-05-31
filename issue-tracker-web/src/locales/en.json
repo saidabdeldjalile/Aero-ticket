@@ -104,13 +104,12 @@
     "descriptionUpdated": "Ticket description updated successfully"
   },
   "status": {
-    "open": "Open",
+    "nouveau": "New",
+    "toDo": "To Do",
     "inProgress": "In Progress",
-    "resolved": "Resolved",
-    "closed": "Closed",
-    "deleted": "Deleted",
-    "pending": "Pending",
-    "reopened": "Reopened"
+    "waitingForUserResponse": "Waiting for User Response",
+    "done": "Done",
+    "closed": "Closed"
   },
   "priority": {
     "low": "Low",
@@ -167,10 +166,24 @@
   },
   "notifications": {
     "title": "Notifications",
+    "alerts": "Alerts",
+    "description": "Stay informed with the latest updates and activities.",
     "markAsRead": "Mark as Read",
     "markAllAsRead": "Mark All as Read",
+    "markAllRead": "Mark All as Read",
     "noNotifications": "No notifications",
-    "newNotification": "New notification"
+    "newNotification": "New notification",
+    "unread": "You have {{count}} unread notification{{pluralize}}",
+    "empty": "All caught up!",
+    "emptyDesc": "You have no notifications at the moment. New notifications will appear here.",
+    "new": "New",
+    "upToDate": "You're up to date",
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} minute{{count}} ago",
+      "hoursAgo": "{{count}} hour{{count}} ago",
+      "daysAgo": "{{count}} day{{count}} ago"
+    }
   },
   "auth": {
     "login": "Login",
@@ -560,6 +573,7 @@
     "unassigned": "Unassigned",
     "noTicketsDesc": "No results match your search",
     "noTicketsEmpty": "No tickets have been created yet",
+    "noProject": "No Project",
     "bulkDeleteConfirm": "Delete {{count}} ticket(s)?",
     "assignPrompt": "Email of the user to assign:"
   }

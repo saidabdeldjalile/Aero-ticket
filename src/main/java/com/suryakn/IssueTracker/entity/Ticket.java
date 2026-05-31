@@ -39,6 +39,11 @@ public class Ticket {
     @Column(columnDefinition = "VARCHAR(50)")
     @Enumerated(EnumType.STRING)
     private Priority priority;
+
+    @Column(columnDefinition = "VARCHAR(50)")
+    @Enumerated(EnumType.STRING)
+    private IssueType issueType;
+
     private String category;
     @Column(columnDefinition = "TEXT")
     private String vector;

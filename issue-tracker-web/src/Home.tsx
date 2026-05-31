@@ -29,18 +29,39 @@ export default function Home() {
 
     const fetchStats = async () => {
       try {
+        const email = auth?.email;
+        const role = auth?.role;
+        const departmentId = auth?.departmentId;
+
+        let ticketsPromise;
+
+        if (role === "ADMIN") {
+          // Admin: get all tickets
+          ticketsPromise = api.get("/tickets", { params: { page: 0, size: 1000 } });
+        } else if (role === "SUPPORT" && departmentId) {
+          // Support: get tickets assigned to them + department tickets
+          ticketsPromise = api.get("/tickets/tickets-for-user", {
+            params: { email, role, departmentId, page: 0, size: 1000 },
+          });
+        } else {
+          // Regular user (USER): get their own tickets only
+          ticketsPromise = api.get("/tickets/my-tickets", {
+            params: { email, page: 0, size: 1000 },
+          });
+        }
+
         const [ticketsRes, projectsRes] = await Promise.all([
-          api.get("/tickets", { params: { page: 0, size: 5 } }),
+          ticketsPromise,
           api.get("/projects", { params: { page: 0, size: 6 } }),
         ]);
 
         const allTickets = ticketsRes.data?.content || [];
-        const openTickets = allTickets.filter((t: TicketResponse) => 
-          t.status === "Open" || t.status === "ToDo" || t.status === "InProgress"
-        );
-        const resolvedTickets = allTickets.filter((t: TicketResponse) => 
-          t.status === "Done" || t.status === "Resolved"
-        );
+  const openTickets = allTickets.filter((t: TicketResponse) =>
+    t.status === "Nouveau" || t.status === "EnCours" || t.status === "EnAttente"
+  );
+  const resolvedTickets = allTickets.filter((t: TicketResponse) =>
+    t.status === "Terminé"
+  );
 
         setStats({
           totalTickets: ticketsRes.data?.totalElements || allTickets.length,
@@ -58,7 +79,7 @@ export default function Home() {
     };
 
     void fetchStats();
-  }, [auth?.token, navigate, t]);
+  }, [auth?.token, auth?.email, auth?.role, auth?.departmentId, navigate, t]);
 
   if (!auth?.token) {
     return null;
@@ -75,18 +96,17 @@ export default function Home() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "Open":
-      case "OPEN":
+      case "Nouveau":
         return { color: "badge-info", label: t('status.open'), icon: "🟢" };
-      case "InProgress":
+      case "EnCours":
       case "IN_PROGRESS":
         return { color: "badge-warning", label: t('status.inProgress'), icon: "🟡" };
-      case "Done":
-      case "RESOLVED":
-        return { color: "badge-success", label: t('status.resolved'), icon: "✅" };
-      case "Closed":
+      case "Terminé":
       case "CLOSED":
-        return { color: "badge-neutral", label: t('status.closed'), icon: "🔒" };
+        return { color: "badge-success", label: t('status.resolved'), icon: "✅" };
+      case "EnAttente":
+      case "WAITING_FOR_USER":
+        return { color: "badge-info", label: "En attente", icon: "⏸️" };
       default:
         return { color: "badge-ghost", label: status, icon: "📋" };
     }
@@ -155,35 +175,35 @@ export default function Home() {
   ];
 
   const quickActions = [
-    { 
-      to: "/projects", 
-      icon: "🚀", 
-      label: t('navbar.projects'), 
-      desc: t('home.viewProjects'), 
+    {
+      to: "/projects",
+      icon: "🚀",
+      label: t('navbar.projects'),
+      desc: t('home.viewProjects'),
       color: "from-red-500 to-red-600",
       bgColor: "bg-red-500/10"
     },
-    { 
-      to: "/my-tickets", 
-      icon: "🎫", 
-      label: t('navbar.tickets'), 
-      desc: t('home.viewTickets'), 
+    {
+      to: "/my-tickets",
+      icon: "🎫",
+      label: t('navbar.tickets'),
+      desc: t('home.viewTickets'),
       color: "from-red-600 to-red-700",
       bgColor: "bg-red-600/10"
     },
-    { 
-      to: "/notifications", 
-      icon: "🔔", 
-      label: t('notifications.title'), 
-      desc: t('home.viewNotifications'), 
+    {
+      to: "/notifications",
+      icon: "🔔",
+      label: t('notifications.title'),
+      desc: t('home.viewNotifications'),
       color: "from-red-700 to-red-800",
       bgColor: "bg-red-700/10"
     },
-    ...(auth?.role === "ADMIN" ? [{ 
-      to: "/dashboard", 
-      icon: "📊", 
-      label: t('navbar.dashboard'), 
-      desc: t('home.viewDashboard'), 
+    ...(auth?.role === "ADMIN" ? [{
+      to: "/dashboard",
+      icon: "📊",
+      label: t('navbar.dashboard'),
+      desc: t('home.viewDashboard'),
       color: "from-gray-700 to-gray-800",
       bgColor: "bg-gray-500/10"
     }] : []),
@@ -199,7 +219,7 @@ export default function Home() {
           <div className="absolute top-0 -right-4 w-72 h-72 bg-red-300 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob animation-delay-2000"></div>
           <div className="absolute -bottom-8 left-20 w-72 h-72 bg-gray-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
         </div>
-        
+
         <div className="relative p-8 md:p-12">
           <div className="max-w-4xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-sm mb-4 animate-fadeIn">
@@ -216,7 +236,7 @@ export default function Home() {
             <p className="mt-4 text-lg text-white/90 max-w-2xl animate-slideInLeft animation-delay-2000">
               {t('home.description')}
             </p>
-            
+
             {/* Quick Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 animate-fadeIn animation-delay-4000">
               <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-4 border border-white/25 hover:bg-white/25 transition-all duration-300">
@@ -253,7 +273,7 @@ export default function Home() {
             style={{ backgroundImage: `linear-gradient(135deg, ${stat.bgGradient})` }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"
-                 style={{ backgroundImage: `linear-gradient(135deg, ${stat.gradient})` }}></div>
+              style={{ backgroundImage: `linear-gradient(135deg, ${stat.gradient})` }}></div>
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center text-2xl backdrop-blur-sm`}>
@@ -351,8 +371,8 @@ export default function Home() {
                           <div className="flex-1">
                             <div className="font-bold text-gray-900 dark:text-white">{ticket.title}</div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {ticket.project?.name || t('home.noProject')}
-                          </div>
+                              {ticket.project?.name || t('home.noProject')}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 flex-wrap">
@@ -416,8 +436,8 @@ export default function Home() {
             </div>
             <div>
               <h3 className="font-bold text-gray-900 dark:text-white">{t('home.yourActivity')}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1" dangerouslySetInnerHTML={{ 
-                __html: t('home.activityDesc', { open: stats?.openTickets ?? 0, resolved: stats?.resolvedTickets ?? 0 }) 
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1" dangerouslySetInnerHTML={{
+                __html: t('home.activityDesc', { open: stats?.openTickets ?? 0, resolved: stats?.resolvedTickets ?? 0 })
               }} />
             </div>
           </div>

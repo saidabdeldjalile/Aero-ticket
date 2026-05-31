@@ -1,100 +1,82 @@
-import { AxiosResponse } from "axios";
-import { useMemo, useState, type ChangeEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import api from "./api/axios";
-import { Project, TicketResponse } from "./TicketResponse";
+import type { Project } from "./TicketResponse";
+import type { PaginatedTickets } from "./TicketResponse";
 import useAuth from "./hooks/useAuth";
 import useSWR, { mutate } from "swr";
+import TicketRow from "./components/ticket/TicketRow";
+import Pagination from "./components/ticket/Pagination";
+
+const PAGE_SIZE = 10;
 
 interface TicketListProps {
   project: Project;
 }
 
-interface PaginatedTickets {
-  content: TicketResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-}
-
-function formatDate(value?: string) {
-  if (!value) {
-    return "N/A";
-  }
-
-  return new Date(value).toLocaleDateString();
-}
-
 export default function TicketList({ project }: TicketListProps) {
   const { t } = useTranslation();
-  const { id, name } = project;
-  const url = `/projects/${id}/tickets`;
-  const navigate = useNavigate();
   const { auth } = useAuth();
+
   const [page, setPage] = useState(0);
-  const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const canDelete = auth?.role === "ADMIN";
-  const key = `ticket-${id}-${page}-${searchTerm}`;
+  const projectId = project.id;
+  const projectName = project.name;
+  const canDelete = auth?.role === "ADMIN" || auth?.role === "SUPPORT";
 
-  const fetcher = (fetchUrl: string) => {
-    return api
-      .get<PaginatedTickets>(fetchUrl, {
-        params: { page, size: pageSize, search: searchTerm || undefined },
-      })
-      .then((res: AxiosResponse<PaginatedTickets>) => res.data);
-  };
+  const swrKey = `ticket-project-${projectId}-${page}-${searchTerm}`;
 
-  const {
-    data: paginatedTickets,
-    error,
-    isLoading,
-  } = useSWR<PaginatedTickets | null>(key, () => fetcher(url));
+  const { data: paginated, error, isLoading } = useSWR<PaginatedTickets | null>(
+    swrKey,
+    () =>
+      api
+        .get<PaginatedTickets>(`/projects/${projectId}/tickets`, {
+          params: { page, size: PAGE_SIZE, search: searchTerm || undefined },
+        })
+        .then((res) => res.data),
+  );
 
-  const tickets = useMemo(() => paginatedTickets?.content || [], [paginatedTickets]);
+  const tickets = paginated?.content ?? [];
 
   function handleDelete(ticketId: number) {
-    if (window.confirm(t('ticketList.deleteConfirm', { default: "Are you sure you want to delete this ticket?" }))) {
-      api
-        .delete(`/tickets/${ticketId}`)
-        .then(() => {
-          toast.success("Ticket deleted successfully");
-          mutate(key);
-        })
-        .catch((err) => {
-          console.error("Error deleting ticket:", err);
-          const errorMessage = err.response?.data?.message || err.message || "Failed to delete ticket";
-          toast.error(errorMessage);
-        });
+    if (!window.confirm(t("ticketList.deleteConfirm", { defaultValue: "Are you sure you want to delete this ticket?" }))) {
+      return;
+    }
+
+    api.delete(`/tickets/${ticketId}`)
+      .then(() => {
+        toast.success(t("message.ticketDeleted"));
+        mutate(swrKey);
+      })
+      .catch((err) => {
+        const msg = err.response?.data?.message || err.message || "Failed to delete ticket";
+        toast.error(msg);
+      });
+  }
+
+  function handlePageChange(newPage: number) {
+    if (newPage >= 0 && (!paginated || newPage < paginated.totalPages)) {
+      setPage(newPage);
     }
   }
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 0 && (!paginatedTickets || newPage < paginatedTickets.totalPages)) {
-      setPage(newPage);
-    }
-  };
-
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+  function handleSearch(e: ChangeEvent<HTMLInputElement>) {
     setSearchTerm(e.target.value);
     setPage(0);
-  };
+  }
 
   if (error) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6">
         <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-8 text-center shadow-xl dark:border-red-900/40 dark:bg-red-900/20">
           <div className="text-4xl">⚠️</div>
-          <h2 className="mt-4 text-xl font-bold text-red-700 dark:text-red-200">{t('common.errors.generic')}</h2>
+          <h2 className="mt-4 text-xl font-bold text-red-700 dark:text-red-200">
+            {t("common.errors.generic")}
+          </h2>
           <p className="mt-3 text-sm text-red-600/80 dark:text-red-200/80">
-            {t('ticketList.loadError')}
+            {t("ticketList.loadError")}
           </p>
         </div>
       </div>
@@ -116,21 +98,21 @@ export default function TicketList({ project }: TicketListProps) {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3.5">
               <div className="inline-flex items-center gap-2 rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-base-content/60 shadow-sm">
-                {t('ticketList.projectTickets')}
+                Tickets du projet
               </div>
               <div>
                 <h1 className="section-heading">
-                  <span className="opacity-60">#{id}</span> {name}
+                  <span className="opacity-60">#{projectId}</span> {projectName}
                 </h1>
                 <p className="mt-2.5 max-w-2xl text-sm leading-6 text-base-content/65">
-                  {t('ticketList.description')}
+                  Liste des tickets associés à ce projet
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <span className="rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 text-sm shadow-sm">
-                {paginatedTickets?.totalElements ?? tickets.length} ticket(s)
+                {paginated?.totalElements ?? tickets.length} ticket(s)
               </span>
             </div>
           </div>
@@ -154,7 +136,7 @@ export default function TicketList({ project }: TicketListProps) {
               </svg>
               <input
                 type="text"
-                placeholder={t('ticketList.searchPlaceholder')}
+                placeholder={t("ticketList.searchPlaceholder")}
                 value={searchTerm}
                 onChange={handleSearch}
                 className="input input-bordered w-full pl-12 focus:ring-2 ring-primary/20"
@@ -163,7 +145,7 @@ export default function TicketList({ project }: TicketListProps) {
 
             <div className="flex items-center gap-3 text-sm text-base-content/60">
               <span className="rounded-full border border-base-300/70 bg-base-100/80 px-4 py-2 shadow-sm">
-                {canDelete ? t('ticketList.adminAccess') : t('ticketList.readOnly')}
+                {canDelete ? "Accès administrateur" : "Lecture seule"}
               </span>
             </div>
           </div>
@@ -173,78 +155,27 @@ export default function TicketList({ project }: TicketListProps) {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>{t('ticketList.columns.id')}</th>
-                    <th>{t('ticketList.columns.title')}</th>
-                    <th>{t('ticketList.columns.category')}</th>
-                    <th>{t('ticketList.columns.status')}</th>
-                    <th>{t('ticketList.columns.priority')}</th>
-                    <th>{t('ticketList.columns.createdAt')}</th>
-                    <th>{t('ticketList.columns.modifiedAt')}</th>
-                    <th>{t('ticketList.columns.reportedBy')}</th>
-                    <th>{t('ticketList.columns.assignedTo')}</th>
-                    {canDelete && <th>{t('common.actions')}</th>}
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Type</th>
+                    <th>Catégorie</th>
+                    <th>Statut</th>
+                    <th>Priorité</th>
+                    <th>Créé le</th>
+                    <th>Modifié le</th>
+                    <th>Signalé par</th>
+                    <th>Assigné à</th>
+                    {canDelete && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {tickets.map((ticket) => (
-                    <tr key={ticket.id} className="hover">
-                      <td>
-                        <button
-                          type="button"
-                          className="font-semibold text-base-content hover:text-primary"
-                          onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        >
-                          <span className="opacity-60">#</span>
-                          {ticket.id}
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="font-semibold text-base-content hover:text-primary"
-                          onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        >
-                          {ticket.title}
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="text-base-content/75 hover:text-primary"
-                          onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        >
-                          {ticket.category || "N/A"}
-                        </button>
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${ticket.status === "OPEN"
-                            ? "badge-info"
-                            : ticket.status === "IN_PROGRESS"
-                              ? "badge-warning"
-                              : ticket.status === "RESOLVED"
-                                ? "badge-success"
-                                : "badge-ghost"
-                            }`}
-                        >
-                          {ticket.status}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="badge badge-outline">{ticket.priority}</span>
-                      </td>
-                      <td className="text-base-content/75">{formatDate(ticket?.createdAt)}</td>
-                      <td className="text-base-content/75">{formatDate(ticket?.modifiedAt)}</td>
-                      <td>{ticket.created.firstName}</td>
-                      <td>{ticket.assigned ? ticket.assigned.firstName : t('ticketList.unassigned')}</td>
-                      {canDelete && (
-                        <td>
-                          <button className="btn btn-sm btn-error" onClick={() => handleDelete(ticket.id)}>
-                            {t('common.delete')}
-                          </button>
-                        </td>
-                      )}
-                    </tr>
+                    <TicketRow
+                      key={ticket.id}
+                      ticket={ticket}
+                      canDelete={canDelete}
+                      onDelete={handleDelete}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -252,29 +183,21 @@ export default function TicketList({ project }: TicketListProps) {
               {tickets.length === 0 && (
                 <div className="flex min-h-[240px] items-center justify-center p-10 text-center text-base-content/60">
                   <div>
-                    <div className="text-lg font-semibold text-base-content">{t('ticketList.noTickets')}</div>
-                    <p className="mt-2 text-sm">
-                      {t('ticketList.noTicketsDesc')}
-                    </p>
+                    <div className="text-lg font-semibold text-base-content">
+                      {t("ticketList.noTickets")}
+                    </div>
+                    <p className="mt-2 text-sm">{t("ticketList.noTicketsDesc")}</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {paginatedTickets && paginatedTickets.totalPages > 1 && (
-              <div className="flex flex-col items-center justify-between gap-4 border-t border-base-300/60 bg-base-100/70 px-6 py-4 md:flex-row">
-                <span className="text-sm text-base-content/60">
-                  Page {paginatedTickets.number + 1} of {paginatedTickets.totalPages}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button className="btn btn-sm" disabled={paginatedTickets.first} onClick={() => handlePageChange(page - 1)}>
-                    {t('common.previous')}
-                  </button>
-                  <button className="btn btn-sm" disabled={paginatedTickets.last} onClick={() => handlePageChange(page + 1)}>
-                    {t('common.next')}
-                  </button>
-                </div>
-              </div>
+            {paginated && (
+              <Pagination
+                paginated={paginated}
+                currentPage={page}
+                onPageChange={handlePageChange}
+              />
             )}
           </div>
         </div>

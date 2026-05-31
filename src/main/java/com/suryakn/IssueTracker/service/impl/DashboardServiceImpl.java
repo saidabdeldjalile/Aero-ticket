@@ -89,16 +89,14 @@ public class DashboardServiceImpl implements DashboardService {
             long totalTickets = tickets.size();
             
             for (Status status : Status.values()) {
-                if (status != Status.Deleted) { // Exclude deleted tickets
-                    long count = statusCount.getOrDefault(status, 0L);
-                    double percentage = totalTickets > 0 ? (count * 100.0 / totalTickets) : 0.0;
-                    
-                    TicketStatusDistribution statusData = new TicketStatusDistribution();
-                    statusData.setStatus(status.name());
-                    statusData.setCount(count);
-                    statusData.setPercentage(Math.round(percentage * 100.0) / 100.0);
-                    distribution.add(statusData);
-                }
+                long count = statusCount.getOrDefault(status, 0L);
+                double percentage = totalTickets > 0 ? (count * 100.0 / totalTickets) : 0.0;
+                
+                TicketStatusDistribution statusData = new TicketStatusDistribution();
+                statusData.setStatus(status.name());
+                statusData.setCount(count);
+                statusData.setPercentage(Math.round(percentage * 100.0) / 100.0);
+                distribution.add(statusData);
             }
             
             return ResponseEntity.ok(distribution);
@@ -123,8 +121,8 @@ public class DashboardServiceImpl implements DashboardService {
                     .collect(Collectors.toList());
                 
                 long total = deptTickets.size();
-                long open = deptTickets.stream().filter(t -> t.getStatus() == Status.Open).count();
-                long closed = deptTickets.stream().filter(t -> t.getStatus() == Status.Closed).count();
+                long open = deptTickets.stream().filter(t -> t.getStatus() == Status.Nouveau).count();
+                long closed = deptTickets.stream().filter(t -> t.getStatus() == Status.Terminé).count();
                 
                 double avgResolutionTime = calculateAverageResolutionTime(deptTickets);
                 
@@ -164,7 +162,7 @@ public class DashboardServiceImpl implements DashboardService {
                     .collect(Collectors.toList());
                 
                 List<Ticket> resolvedTickets = assignedTickets.stream()
-                    .filter(t -> t.getStatus() == Status.Closed)
+                    .filter(t -> t.getStatus() == Status.Terminé)
                     .collect(Collectors.toList());
                 
                 long total = userTickets.size();
@@ -197,9 +195,9 @@ public class DashboardServiceImpl implements DashboardService {
         List<Ticket> tickets = getFilteredTickets(filters);
         
         stats.setTotalTickets((long) tickets.size());
-        stats.setOpenTickets(tickets.stream().filter(t -> t.getStatus() == Status.Open).count());
-        stats.setClosedTickets(tickets.stream().filter(t -> t.getStatus() == Status.Closed).count());
-        stats.setInProgressTickets(tickets.stream().filter(t -> t.getStatus() == Status.InProgress).count());
+        stats.setOpenTickets(tickets.stream().filter(t -> t.getStatus() == Status.Nouveau).count());
+        stats.setClosedTickets(tickets.stream().filter(t -> t.getStatus() == Status.Terminé).count());
+        stats.setInProgressTickets(tickets.stream().filter(t -> t.getStatus() == Status.EnCours).count());
         stats.setTotalProjects((long) projectRepository.findAll().size());
         stats.setTotalUsers((long) userRepository.findAll().size());
         stats.setTotalDepartments((long) departmentRepository.findAll().size());
@@ -209,7 +207,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private List<Ticket> getFilteredTickets(TimeRangeFilter filters) {
-        List<Ticket> tickets = ticketRepository.findByStatusNot(Status.Deleted);
+        List<Ticket> tickets = ticketRepository.findAll();
         
         // Get current user's department for ADMIN role-based filtering
         Long userDepartmentId = getCurrentUserDepartmentId();
@@ -305,7 +303,7 @@ public class DashboardServiceImpl implements DashboardService {
         long resolvedCount = 0;
         
         for (Ticket ticket : tickets) {
-            if (ticket.getStatus() == Status.Closed && ticket.getCreatedAt() != null && ticket.getModifiedAt() != null) {
+            if (ticket.getStatus() == Status.Terminé && ticket.getCreatedAt() != null && ticket.getModifiedAt() != null) {
                 long days = ChronoUnit.DAYS.between(ticket.getCreatedAt(), ticket.getModifiedAt());
                 totalTime += days;
                 resolvedCount++;

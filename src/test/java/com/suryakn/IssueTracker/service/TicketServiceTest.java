@@ -90,7 +90,7 @@ class TicketServiceTest {
                 .id(1L)
                 .title("Test Ticket")
                 .description("Test Description")
-                .status(Status.Open)
+                .status(Status.Nouveau)
                 .priority(Priority.High)
                 .category("Bug")
                 .createdBy(testUser)
@@ -148,13 +148,13 @@ class TicketServiceTest {
     }
 
     @Test
-    void testDeleteTicket_WhenExists_ShouldMarkAsDeleted() {
+    void testDeleteTicket_WhenExists_ShouldDeletePermanently() {
         when(ticketRepository.findById(1L)).thenReturn(Optional.of(testTicket));
         ticketService.deleteTicket(1L);
 
         verify(ticketRepository, times(1)).findById(1L);
-        verify(ticketRepository, times(1)).save(testTicket);
-        assertEquals(Status.Deleted, testTicket.getStatus());
+        verify(ticketRepository, times(1)).delete((Ticket) testTicket);
+        verify(ticketRepository, never()).save(any());
     }
 
     @Test
@@ -164,6 +164,7 @@ class TicketServiceTest {
 
         verify(ticketRepository, times(1)).findById(999L);
         verify(ticketRepository, never()).save(any());
+        verify(ticketRepository, never()).delete((Ticket) any());
     }
 
     @Test
@@ -200,7 +201,7 @@ class TicketServiceTest {
         TicketRequest updateRequest = TicketRequest.builder()
                 .title("Updated Title")
                 .description("Updated Description")
-                .status(Status.InProgress)
+                 .status(Status.EnCours)
                 .priority(Priority.Critical)
                 .category("Feature")
                 .build();
@@ -230,13 +231,13 @@ class TicketServiceTest {
         when(ticketRepository.findById(1L)).thenReturn(Optional.of(testTicket));
         
         TicketUpdateRequest updateRequest = TicketUpdateRequest.builder()
-                .status(Status.Done)
+                 .status(Status.Terminé)
                 .build();
 
         ResponseEntity<TicketResponse> response = ticketService.updateTicketPartial(1L, updateRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(Status.Done, response.getBody().getStatus());
+         assertEquals(Status.Terminé, response.getBody().getStatus());
         verify(notificationService, times(1)).createNotification(
             eq(NotificationType.TICKET_STATUS_CHANGED), anyString(), anyString(), any(), any(), anyLong()
         );

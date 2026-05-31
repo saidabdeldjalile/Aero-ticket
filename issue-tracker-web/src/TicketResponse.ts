@@ -6,6 +6,7 @@ export interface TicketResponse {
   status: string;
   priority: string;
   category?: string;
+  issueType?: string;
   comments: Comment[];
   createdAt: string;
   modifiedAt: string;
@@ -55,4 +56,20 @@ export interface Department {
   id: number;
   name: string;
   description?: string;
+}
+
+export interface PaginatedTickets {
+  content: TicketResponse[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
+export function formatDate(value?: string): string {
+  if (!value) return "N/A";
+  return new Date(value).toLocaleDateString();
 }

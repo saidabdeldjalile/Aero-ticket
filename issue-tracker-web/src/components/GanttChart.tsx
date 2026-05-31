@@ -52,29 +52,28 @@ export default function GanttChart({ projectId, departmentId }: GanttChartProps)
       if (departmentId) params.departmentId = departmentId;
 
       // Request a large page size to get all tickets for the Gantt chart
-      const response = await api.get<PaginatedTickets>("/tickets/search", { 
-        params: { ...params, size: 1000 } 
+      const response = await api.get<PaginatedTickets>("/tickets/search", {
+        params: { ...params, size: 1000 }
       });
-      
+
       if (containerRef.current) {
         // Clear previous Gantt
         containerRef.current.innerHTML = '';
-        
+
         // Access the content array from the paginated response
         const tickets = response.data.content || [];
         const tasks: GanttTask[] = tickets
-          .filter(ticket => ticket.status !== "Deleted")
+
           .map((ticket, index) => {
             const startDate = new Date(ticket.createdAt);
             const endDate = ticket.modifiedAt ? new Date(ticket.modifiedAt) : new Date();
-            
+
             // Calculate progress based on status
             let progress = 0;
             switch (ticket.status) {
-              case "Open": progress = 0; break;
-              case "InProgress": progress = 50; break;
-              case "Resolved": progress = 90; break;
-              case "Closed": progress = 100; break;
+              case "Nouveau": progress = 0; break;
+              case "EnCours": progress = 50; break;
+              case "Terminé": progress = 90; break;
               default: progress = 25;
             }
 
@@ -102,7 +101,7 @@ export default function GanttChart({ projectId, departmentId }: GanttChartProps)
             view_mode: viewMode as any,
             date_format: "YYYY-MM-DD",
             language: "fr",
-            custom_popup_html: function(task: any) {
+            custom_popup_html: function (task: any) {
               return `
                 <div class="card bg-base-100 p-2" style="min-width: 200px;">
                   <h5 class="font-bold">${task.name}</h5>
@@ -125,10 +124,9 @@ export default function GanttChart({ projectId, departmentId }: GanttChartProps)
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case "Open": return "bar-blue";
-      case "InProgress": return "bar-yellow";
-      case "Resolved": return "bar-green";
-      case "Closed": return "bar-gray";
+      case "Nouveau": return "bar-blue";
+      case "EnCours": return "bar-yellow";
+      case "Terminé": return "bar-green";
       default: return "bar-orange";
     }
   };

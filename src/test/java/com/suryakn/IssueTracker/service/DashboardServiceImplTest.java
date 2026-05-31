@@ -81,7 +81,7 @@ class DashboardServiceImplTest {
                 .id(1L)
                 .title("Test Ticket")
                 .description("Test Description")
-                .status(Status.Open)
+                .status(Status.Nouveau)
                 .priority(com.suryakn.IssueTracker.entity.Priority.High)
                 .category("Bug")
                 .createdBy(testUser)
@@ -93,7 +93,7 @@ class DashboardServiceImplTest {
     void testGetStats_ShouldReturnDashboardData() {
         List<Ticket> tickets = new ArrayList<>();
         tickets.add(testTicket);
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
         when(projectRepository.findAll()).thenReturn(List.of(testProject));
         when(userRepository.findAll()).thenReturn(List.of(testUser));
         when(departmentRepository.findAll()).thenReturn(List.of(testDepartment));
@@ -108,7 +108,7 @@ class DashboardServiceImplTest {
 
     @Test
     void testGetStats_WithNoTickets_ShouldReturnZeroCounts() {
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(new ArrayList<>());
+        when(ticketRepository.findAll()).thenReturn(new ArrayList<>());
         when(projectRepository.findAll()).thenReturn(new ArrayList<>());
         when(userRepository.findAll()).thenReturn(new ArrayList<>());
         when(departmentRepository.findAll()).thenReturn(new ArrayList<>());
@@ -124,7 +124,7 @@ class DashboardServiceImplTest {
     void testGetDashboardData_ShouldReturnCompleteDashboardData() {
         List<Ticket> tickets = new ArrayList<>();
         tickets.add(testTicket);
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
         when(projectRepository.findAll()).thenReturn(List.of(testProject));
         when(userRepository.findAll()).thenReturn(List.of(testUser));
         when(departmentRepository.findAll()).thenReturn(List.of(testDepartment));
@@ -142,50 +142,48 @@ class DashboardServiceImplTest {
     @Test
     void testGetStatusDistribution_ShouldReturnStatusCounts() {
         List<Ticket> tickets = new ArrayList<>();
-        Ticket openTicket = Ticket.builder().id(1L).status(Status.Open).build();
-        Ticket closedTicket = Ticket.builder().id(2L).status(Status.Closed).build();
-        Ticket inProgressTicket = Ticket.builder().id(3L).status(Status.InProgress).build();
-        tickets.add(openTicket);
+        Ticket nouveauTicket = Ticket.builder().id(1L).status(Status.Nouveau).build();
+         Ticket closedTicket = Ticket.builder().id(2L).status(Status.Terminé).build();
+         Ticket inProgressTicket = Ticket.builder().id(3L).status(Status.EnCours).build();
+        tickets.add(nouveauTicket);
         tickets.add(closedTicket);
         tickets.add(inProgressTicket);
 
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
 
         ResponseEntity<List<TicketStatusDistribution>> response = dashboardService.getStatusDistribution(null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        // Should have entries for Open, Closed, InProgress (not Deleted)
+        // Should have entries for Nouveau, Done, InProgress
         assertTrue(response.getBody().size() >= 3);
     }
 
     @Test
-    void testGetStatusDistribution_ShouldExcludeDeletedTickets() {
+    void testGetStatusDistribution_ShouldReturnAllStatuses() {
         List<Ticket> tickets = new ArrayList<>();
         tickets.add(testTicket);
 
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
 
         ResponseEntity<List<TicketStatusDistribution>> response = dashboardService.getStatusDistribution(null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        // Verify no Deleted status in results
-        boolean hasDeleted = response.getBody().stream()
-            .anyMatch(dist -> "Deleted".equals(dist.getStatus()));
-        assertFalse(hasDeleted);
+        // Verify all statuses are present (Nouveau, InProgress, WaitingForUserResponse, Done)
+        assertTrue(response.getBody().size() == Status.values().length);
     }
 
     @Test
     void testGetStatusDistribution_WithEmptyList_ShouldReturnAllStatusesWithZeroCounts() {
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(new ArrayList<>());
+        when(ticketRepository.findAll()).thenReturn(new ArrayList<>());
 
         ResponseEntity<List<TicketStatusDistribution>> response = dashboardService.getStatusDistribution(null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         // Should still return all status types with 0 counts
-        assertTrue(response.getBody().size() >= 3);
+        assertTrue(response.getBody().size() == Status.values().length);
     }
 
     @Test
@@ -194,7 +192,7 @@ class DashboardServiceImplTest {
         tickets.add(testTicket);
 
         when(departmentRepository.findAll()).thenReturn(List.of(testDepartment));
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
 
         ResponseEntity<List<DepartmentStats>> response = dashboardService.getDepartmentStats(null);
 
@@ -207,7 +205,7 @@ class DashboardServiceImplTest {
     @Test
     void testGetDepartmentStats_WithNoDepartments_ShouldReturnEmptyList() {
         when(departmentRepository.findAll()).thenReturn(new ArrayList<>());
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(new ArrayList<>());
+        when(ticketRepository.findAll()).thenReturn(new ArrayList<>());
 
         ResponseEntity<List<DepartmentStats>> response = dashboardService.getDepartmentStats(null);
 
@@ -222,7 +220,7 @@ class DashboardServiceImplTest {
         tickets.add(testTicket);
 
         when(userRepository.findAll()).thenReturn(List.of(testUser));
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
 
         ResponseEntity<List<UserStats>> response = dashboardService.getUserStats(null);
 
@@ -235,7 +233,7 @@ class DashboardServiceImplTest {
     @Test
     void testGetUserStats_WithNoUsers_ShouldReturnEmptyList() {
         when(userRepository.findAll()).thenReturn(new ArrayList<>());
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(new ArrayList<>());
+        when(ticketRepository.findAll()).thenReturn(new ArrayList<>());
 
         ResponseEntity<List<UserStats>> response = dashboardService.getUserStats(null);
 
@@ -248,7 +246,7 @@ class DashboardServiceImplTest {
     void testGetUserStats_WithResolvedTickets_ShouldCalculateAverageResolutionTime() {
         Ticket resolvedTicket = Ticket.builder()
             .id(1L)
-            .status(Status.Closed)
+             .status(Status.Terminé)
             .createdBy(testUser)
             .build();
         resolvedTicket.setAssignedTo(testUser);
@@ -257,7 +255,7 @@ class DashboardServiceImplTest {
         tickets.add(resolvedTicket);
 
         when(userRepository.findAll()).thenReturn(List.of(testUser));
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
 
         ResponseEntity<List<UserStats>> response = dashboardService.getUserStats(null);
 
@@ -277,7 +275,7 @@ class DashboardServiceImplTest {
         filter.setEndDate("2024-12-31");
         filter.setDepartmentId(1L);
 
-        when(ticketRepository.findByStatusNot(Status.Deleted)).thenReturn(tickets);
+        when(ticketRepository.findAll()).thenReturn(tickets);
         when(projectRepository.findAll()).thenReturn(List.of(testProject));
         when(userRepository.findAll()).thenReturn(List.of(testUser));
         when(departmentRepository.findAll()).thenReturn(List.of(testDepartment));

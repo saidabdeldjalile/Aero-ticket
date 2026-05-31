@@ -1,5 +1,6 @@
 package com.suryakn.IssueTracker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -35,9 +36,11 @@ public class Department {
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"department", "tickets"})
+    @JsonIgnore
     private List<Project> projects = new ArrayList<>();
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"department", "comments", "createdTickets", "assignedTickets", "password", "role"})
+    @JsonIgnore
     private List<UserEntity> users = new ArrayList<>();
 }
