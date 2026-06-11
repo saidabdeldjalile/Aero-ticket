@@ -65,6 +65,8 @@ function Loginform() {
       const token = res.data.token as string;
       const role = res.data.role ? String(res.data.role) : null;
       const departmentId = res.data.departmentId as number | null;
+      const firstName = res.data.firstName as string | undefined;
+      const lastName = res.data.lastName as string | undefined;
 
       localStorage.setItem("token", token);
       localStorage.setItem(
@@ -73,10 +75,12 @@ function Loginform() {
           email,
           role,
           departmentId,
+          firstName,
+          lastName,
         })
       );
 
-      setAuth({ email, token, role, departmentId });
+      setAuth({ email, token, role, departmentId, firstName, lastName });
 
       setPassword("");
       setEmail("");
@@ -142,7 +146,7 @@ function Loginform() {
                 <div className="mb-10">
                   <div className="bg-white rounded-2xl p-4 inline-block shadow-lg">
                     <img
-                      src="/images/air-algerie-logo.png"
+                      src="/images/lg.png"
                       alt="Air Algeria Logo"
                       className="h-14 w-auto object-contain"
                     />
@@ -203,7 +207,7 @@ function Loginform() {
               {/* Footer */}
               <div className="relative z-10 mt-8 pt-8 border-t border-white/10">
                 <p className="text-white/40 text-[10px] text-center uppercase tracking-widest">
-                  © 2024 Air Algérie Issue Tracker
+                  © 2026 Air Algérie Issue Tracker
                 </p>
               </div>
 

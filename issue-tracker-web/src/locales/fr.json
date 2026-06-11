@@ -60,7 +60,16 @@
       "incident": "Incident",
       "serviceRequest": "Demande de service",
       "question": "Question",
-      "change": "Changement"
+      "change": "Changement",
+      "safety": "Sécurité",
+      "quality": "Qualité",
+      "audit": "Audit",
+      "compliance": "Conformité",
+      "cargo": "Fret",
+      "training": "Formation",
+      "purchase": "Achat",
+      "groundOps": "Opérations au Sol",
+      "passenger": "Passager"
     },
     "categories": {
       "network": "Panne Réseau",
@@ -467,6 +476,8 @@
   },
   "navbar": {
     "dashboard": "Dashboard",
+    "categories": "Catégories",
+    "issueTypes": "Types de demandes",
     "projects": "Projects",
     "tickets": "Tickets",
     "knowledge": "Knowledge",

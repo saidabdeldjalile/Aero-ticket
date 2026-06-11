@@ -4,8 +4,10 @@ import com.suryakn.IssueTracker.auth.dtos.AuthenticateRequest;
 import com.suryakn.IssueTracker.auth.dtos.AuthenticationResponse;
 import com.suryakn.IssueTracker.auth.dtos.RegisterRequest;
 import com.suryakn.IssueTracker.config.JwtService;
+import com.suryakn.IssueTracker.entity.Department;
 import com.suryakn.IssueTracker.entity.Role;
 import com.suryakn.IssueTracker.entity.UserEntity;
+import com.suryakn.IssueTracker.repository.DepartmentRepository;
 import com.suryakn.IssueTracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,18 +28,34 @@ public class AuthenticateService {
     private static final Logger logger = LoggerFactory.getLogger(AuthenticateService.class);
     
     private final UserRepository repository;
+    private final DepartmentRepository departmentRepository;
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+    private static final AtomicLong sequentialCounter = new AtomicLong(0);
 
     public AuthenticationResponse register(RegisterRequest request) {
         if (!repository.findAllByEmail(request.getEmail()).isEmpty()) {
             throw new IllegalStateException("Email already registered");
         }
 
-        if (repository.existsByRegistrationNumber(request.getRegistrationNumber())) {
-            throw new IllegalStateException("Registration number already in use");
+        // Resolve department
+        Department department = null;
+        String departmentPrefix = "UNKNOWN";
+        if (request.getDepartmentId() != null) {
+            department = departmentRepository.findById(request.getDepartmentId()).orElse(null);
+            if (department != null) {
+                departmentPrefix = department.getName().substring(0, Math.min(4, department.getName().length())).toUpperCase();
+            }
         }
+
+        // Auto-generate registrationNumber from department prefix + sequential number
+        String registrationNumber;
+        do {
+            long seq = sequentialCounter.incrementAndGet();
+            registrationNumber = departmentPrefix + "-" + String.format("%04d", seq);
+        } while (repository.existsByRegistrationNumber(registrationNumber));
 
         var user = UserEntity.builder()
                 .firstName(request.getFirstName())
@@ -43,7 +63,8 @@ public class AuthenticateService {
                 .email(request.getEmail())
                 .password(encoder.encode(request.getPassword()))
                 .role(Role.valueOf(request.getRole()))
-                .registrationNumber(request.getRegistrationNumber())
+                .registrationNumber(registrationNumber)
+                .department(department)
                 .build();
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -93,6 +114,8 @@ public class AuthenticateService {
                     .token(jwtToken)
                     .role(user.getRole())
                     .departmentId(departmentId)
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
                     .build();
                     
         } catch (BadCredentialsException e) {

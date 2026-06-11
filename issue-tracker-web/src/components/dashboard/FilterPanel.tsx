@@ -18,6 +18,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,8 +32,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         // Handle paginated responses - extract content array from Page object
         const deptsData = deptsRes.data?.content || deptsRes.data || [];
         const projsData = projsRes.data?.content || projsRes.data || [];
-        setDepartments(Array.isArray(deptsData) ? deptsData : []);
-        setProjects(Array.isArray(projsData) ? projsData : []);
+        const depts = Array.isArray(deptsData) ? deptsData : [];
+        const projs = Array.isArray(projsData) ? projsData : [];
+        setDepartments(depts);
+        setProjects(projs);
       } catch (error) {
         console.error('Error fetching lists:', error);
         setDepartments([]);
@@ -45,6 +48,15 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     fetchLists();
   }, []);
 
+  // Filter projects when department changes
+  useEffect(() => {
+    if (filters.departmentId) {
+      setFilteredProjects(projects.filter(p => p.departmentId === filters.departmentId));
+    } else {
+      setFilteredProjects(projects);
+    }
+  }, [filters.departmentId, projects]);
+
   const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
     onFilterChange({
       ...filters,
@@ -55,7 +67,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   const handleDepartmentChange = (value: string) => {
     onFilterChange({
       ...filters,
-      departmentId: value ? parseInt(value) : undefined
+      departmentId: value ? parseInt(value) : undefined,
+      projectId: undefined, // Reset project when department changes
     });
   };
 
@@ -140,7 +153,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                 {loading ? (
                   <option disabled>Loading...</option>
                 ) : (
-                  projects.map((proj) => (
+                  filteredProjects.map((proj) => (
                     <option key={proj.id} value={proj.id.toString()}>
                       {proj.name}
                     </option>

@@ -9,37 +9,6 @@ interface TicketActionsProps {
   onUpdate?: () => void;
 }
 
-/* ── Permission badge ── */
-function PermBadge({
-  active,
-  label,
-  sub,
-  color,
-}: {
-  active: boolean;
-  label: string;
-  sub?: string;
-  color: string;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-all ${
-        active
-          ? `border-${color}-200 bg-${color}-50 text-${color}-700 dark:border-${color}-800 dark:bg-${color}-900/20 dark:text-${color}-300`
-          : 'border-gray-100 bg-gray-50 text-gray-400 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-600'
-      }`}
-    >
-      <span className="text-sm leading-none">{active ? '✅' : '❌'}</span>
-      <span>{label}</span>
-      {active && sub && (
-        <span className={`ml-auto text-[9px] font-bold uppercase tracking-widest text-${color}-400`}>
-          {sub}
-        </span>
-      )}
-    </div>
-  );
-}
-
 /* ── Transition row ── */
 function TransRow({
   from,
@@ -213,18 +182,6 @@ export const TicketActions: React.FC<TicketActionsProps> = ({ ticket, onUpdate }
           <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500">{ticket?.status}</span>
         </div>
         <div className="p-3">{renderActions()}</div>
-      </div>
-
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-        <div className="border-b border-gray-100 bg-gray-50 px-4 py-2.5 dark:border-gray-800 dark:bg-gray-800/50">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">👤 Vos Permissions</span>
-        </div>
-        <div className="flex flex-col gap-1.5 p-3">
-          <PermBadge active={isAdmin} label={auth?.role || 'N/A'} sub="Administrateur" color="red" />
-          <PermBadge active={isSupport} label="Support" sub="Technicien" color="blue" />
-          <PermBadge active={isReporter} label="Reporter" sub="Créateur" color="green" />
-          <PermBadge active={isAssigned} label="Assigné" sub="Support tech." color="red" />
-        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">

@@ -56,12 +56,12 @@ export default function Home() {
         ]);
 
         const allTickets = ticketsRes.data?.content || [];
-  const openTickets = allTickets.filter((t: TicketResponse) =>
-    t.status === "Nouveau" || t.status === "EnCours" || t.status === "EnAttente"
-  );
-  const resolvedTickets = allTickets.filter((t: TicketResponse) =>
-    t.status === "Terminé"
-  );
+        const openTickets = allTickets.filter((t: TicketResponse) =>
+          t.status === "Nouveau" || t.status === "EnCours" || t.status === "EnAttente"
+        );
+        const resolvedTickets = allTickets.filter((t: TicketResponse) =>
+          t.status === "Terminé"
+        );
 
         setStats({
           totalTickets: ticketsRes.data?.totalElements || allTickets.length,
@@ -97,16 +97,16 @@ export default function Home() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Nouveau":
-        return { color: "badge-info", label: t('status.open'), icon: "🟢" };
+        return { color: "badge-info", label: t('status.nouveau'), icon: "🟢" };
       case "EnCours":
       case "IN_PROGRESS":
         return { color: "badge-warning", label: t('status.inProgress'), icon: "🟡" };
       case "Terminé":
       case "CLOSED":
-        return { color: "badge-success", label: t('status.resolved'), icon: "✅" };
+        return { color: "badge-success", label: t('status.done'), icon: "✅" };
       case "EnAttente":
       case "WAITING_FOR_USER":
-        return { color: "badge-info", label: "En attente", icon: "⏸️" };
+        return { color: "badge-neutral", label: t('status.waitingForUserResponse'), icon: "⏸️" };
       default:
         return { color: "badge-ghost", label: status, icon: "📋" };
     }

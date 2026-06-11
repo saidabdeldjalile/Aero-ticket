@@ -44,7 +44,17 @@ public class Ticket {
     @Enumerated(EnumType.STRING)
     private IssueType issueType;
 
+    @Column(name = "category")
     private String category;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id")
+    private Category categoryEntity;
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     @Column(columnDefinition = "TEXT")
     private String vector;
     private String routedDepartmentName;

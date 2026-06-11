@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- ==================== CATEGORY TABLE ==================== -->
+    <changeSet id="020-create-category" author="liquibase">
+        <createTable tableName="category">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="label" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <!-- ==================== CATEGORY_ISSUE_TYPE ( Many-to-Many ) ==================== -->
+    <changeSet id="021-create-category-issue-type" author="liquibase">
+        <createTable tableName="category_issue_type">
+            <column name="category_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="issue_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="category_issue_type"
+                baseColumnNames="category_id"
+                constraintName="fk_category_issue_type_category"
+                referencedTableName="category"
+                referencedColumnNames="id"/>
+
+        <addPrimaryKey
+                tableName="category_issue_type"
+                constraintName="pk_category_issue_type"
+                columnNames="category_id, issue_type"/>
+    </changeSet>
+
+    <!-- ==================== SEED CATEGORIES - AIR ALGERIE ==================== -->
+    <changeSet id="022-seed-categories-airalgerie" author="liquibase">
+        <!-- Maintenance Aéronautique -->
+        <insert tableName="category">
+            <column name="name" value="maintenance-aeronautique"/>
+            <column name="label" value="Maintenance Aéronautique"/>
+            <column name="description" value="Maintenance des avions, pièces détachées, interventions techniques"/>
+        </insert>
+        <!-- Opérations -->
+        <insert tableName="category">
+            <column name="name" value="operations"/>
+            <column name="label" value="Opérations"/>
+            <column name="description" value="Gestion des vols, horaires, embarquement"/>
+        </insert>
+        <!-- Services Clients -->
+        <insert tableName="category">
+            <column name="name" value="services-clients"/>
+            <column name="label" value="Services Clients"/>
+            <column name="description" value="Relations passagers, réclamations, assistance, réservation"/>
+        </insert>
+        <!-- Sécurité -->
+        <insert tableName="category">
+            <column name="name" value="securite"/>
+            <column name="label" value="Sécurité"/>
+            <column name="description" value="Sécurité aérienne, conformité, audits, incidents sécurité"/>
+        </insert>
+        <!-- Ressources Humaines -->
+        <insert tableName="category">
+            <column name="name" value="rh"/>
+            <column name="label" value="Ressources Humaines"/>
+            <column name="description" value="Personnel, formation, paie, recrutement, contrats"/>
+        </insert>
+        <!-- Financier -->
+        <insert tableName="category">
+            <column name="name" value="financier"/>
+            <column name="label" value="Financier"/>
+            <column name="description" value="Facturation, comptabilité, budget, contrôle financier"/>
+        </insert>
+        <!-- IT/Systèmes -->
+        <insert tableName="category">
+            <column name="name" value="it"/>
+            <column name="label" value="IT / Systèmes"/>
+            <column name="description" value="Systèmes informatiques, logiciels, réseaux, applications"/>
+        </insert>
+        <!-- Approvisionnement -->
+        <insert tableName="category">
+            <column name="name" value="approvisionnement"/>
+            <column name="label" value="Approvisionnement"/>
+            <column name="description" value="Fournitures, matériels, services, achats généraux"/>
+        </insert>
+        <!-- Formation -->
+        <insert tableName="category">
+            <column name="name" value="formation"/>
+            <column name="label" value="Formation"/>
+            <column name="description" value="Programmes de formation, certifications, compétiques"/>
+        </insert>
+        <!-- Qualité -->
+        <insert tableName="category">
+            <column name="name" value="qualite"/>
+            <column name="label" value="Qualité"/>
+            <column name="description" value="Assurance qualité, audits internes, amélioration continue"/>
+        </insert>
+        <!-- Environnement -->
+        <insert tableName="category">
+            <column name="name" value="environnement"/>
+            <column name="label" value="Environnement"/>
+            <column name="description" value="Développement durable, émissions, responsabilité environnementale"/>
+        </insert>
+        <!-- Cargo -->
+        <insert tableName="category">
+            <column name="name" value="cargo"/>
+            <column name="label" value="Cargo / Fret"/>
+            <column name="description" value="Expédition marchandises, fret aérien, douanes"/>
+        </insert>
+        <!-- Commercial -->
+        <insert tableName="category">
+            <column name="name" value="commercial"/>
+            <column name="label" value="Commercial"/>
+            <column name="description" value="Vente, tarification, partenariats, programmes de fidélité"/>
+        </insert>
+        <!-- Autres -->
+        <insert tableName="category">
+            <column name="name" value="autres"/>
+            <column name="label" value="Autres"/>
+            <column name="description" value="Demandes non classifiées"/>
+        </insert>
+    </changeSet>
+
+    <!-- ==================== SEED CATEGORY-ISSUE_TYPE RELATIONS ==================== -->
+    <changeSet id="023-seed-category-issue-type-relations-airalgerie" author="liquibase">
+        <!-- maintenance-aeronautique (id=1): Incident, Safety, Task, Change, Quality -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="1"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="1"/><column name="issue_type" value="Safety"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="1"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="1"/><column name="issue_type" value="Change"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="1"/><column name="issue_type" value="Quality"/></insert>
+
+        <!-- operations (id=2): Incident, Task, ServiceRequest, Question, GroundOps -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="2"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="2"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="2"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="2"/><column name="issue_type" value="Question"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="2"/><column name="issue_type" value="GroundOps"/></insert>
+
+        <!-- services-clients (id=3): ServiceRequest, Question, Incident, Passenger -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="3"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="3"/><column name="issue_type" value="Question"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="3"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="3"/><column name="issue_type" value="Passenger"/></insert>
+
+        <!-- securite (id=4): Safety, Incident, Audit, Compliance, Task -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="4"/><column name="issue_type" value="Safety"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="4"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="4"/><column name="issue_type" value="Audit"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="4"/><column name="issue_type" value="Compliance"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="4"/><column name="issue_type" value="Task"/></insert>
+
+        <!-- rh (id=5): ServiceRequest, Task, Question, Change, Training -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="5"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="5"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="5"/><column name="issue_type" value="Question"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="5"/><column name="issue_type" value="Change"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="5"/><column name="issue_type" value="Training"/></insert>
+
+        <!-- financier (id=6): ServiceRequest, Task, Question, Incident, Audit -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="6"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="6"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="6"/><column name="issue_type" value="Question"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="6"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="6"/><column name="issue_type" value="Audit"/></insert>
+
+        <!-- it (id=7): Bug, Incident, ServiceRequest, Feature, Question, Task -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="7"/><column name="issue_type" value="Bug"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="7"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="7"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="7"/><column name="issue_type" value="Feature"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="7"/><column name="issue_type" value="Question"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="7"/><column name="issue_type" value="Task"/></insert>
+
+        <!-- approvisionnement (id=8): ServiceRequest, Change, Task, Purchase -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="8"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="8"/><column name="issue_type" value="Change"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="8"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="8"/><column name="issue_type" value="Purchase"/></insert>
+
+        <!-- formation (id=9): Training, ServiceRequest, Task, Question -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="9"/><column name="issue_type" value="Training"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="9"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="9"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="9"/><column name="issue_type" value="Question"/></insert>
+
+        <!-- qualite (id=10): Quality, Audit, Improvement, Task, Incident -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="10"/><column name="issue_type" value="Quality"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="10"/><column name="issue_type" value="Audit"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="10"/><column name="issue_type" value="Improvement"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="10"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="10"/><column name="issue_type" value="Incident"/></insert>
+
+        <!-- environnement (id=11): Task, Compliance, Audit, Improvement -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="11"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="11"/><column name="issue_type" value="Compliance"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="11"/><column name="issue_type" value="Audit"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="11"/><column name="issue_type" value="Improvement"/></insert>
+
+        <!-- cargo (id=12): ServiceRequest, Task, Incident, Cargo -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="12"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="12"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="12"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="12"/><column name="issue_type" value="Cargo"/></insert>
+
+        <!-- commercial (id=13): ServiceRequest, Question, Feature, Task, Passenger -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="13"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="13"/><column name="issue_type" value="Question"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="13"/><column name="issue_type" value="Feature"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="13"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="13"/><column name="issue_type" value="Passenger"/></insert>
+
+        <!-- autres (id=14): tous les types (fallback) -->
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Bug"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Feature"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Task"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Support"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Incident"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="ServiceRequest"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Question"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Improvement"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Change"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Safety"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Quality"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Audit"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Compliance"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Passenger"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="GroundOps"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Training"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Purchase"/></insert>
+        <insert tableName="category_issue_type"><column name="category_id" valueNumeric="14"/><column name="issue_type" value="Cargo"/></insert>
+    </changeSet>
+
+    <!-- ==================== ADD CATEGORY_ID TO TICKET ==================== -->
+    <changeSet id="024-add-category-id-to-ticket" author="liquibase">
+        <addColumn tableName="ticket">
+            <column name="category_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- ==================== MIGRATE EXISTING CATEGORY VALUES ==================== -->
+    <changeSet id="025-migrate-category-to-category-id" author="liquibase">
+        <sql>UPDATE ticket t SET category_id = (SELECT c.id FROM category c WHERE LOWER(c.name) = LOWER(t.category)) WHERE t.category IS NOT NULL AND EXISTS (SELECT 1 FROM category WHERE LOWER(name) = LOWER(t.category))</sql>
+        <sql>UPDATE ticket SET category_id = (SELECT id FROM category WHERE name = 'autres') WHERE category_id IS NULL</sql>
+    </changeSet>
+
+    <!-- ==================== FK CONSTRAINT FOR TICKET CATEGORY ==================== -->
+    <changeSet id="026-add-ticket-category-fk" author="liquibase">
+        <addForeignKeyConstraint
+                baseTableName="ticket"
+                baseColumnNames="category_id"
+                constraintName="fk_ticket_category"
+                referencedTableName="category"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- ==================== INDEXES FOR CATEGORY AND CATEGORY_ISSUE_TYPE ==================== -->
+    <changeSet id="027-create-category-indexes" author="liquibase">
+        <createIndex indexName="idx_category_active" tableName="category">
+            <column name="active"/>
+        </createIndex>
+        <createIndex indexName="idx_ticket_category_id" tableName="ticket">
+            <column name="category_id"/>
+        </createIndex>
+        <createIndex indexName="idx_category_issue_type_category" tableName="category_issue_type">
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

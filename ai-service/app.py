@@ -21,6 +21,31 @@ CORS(app)
 
 # ==================== CONFIG ====================
 
+# Manually load environment variables from .env if present
+def _load_dotenv():
+    # Look in the current directory and the parent directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    for env_path in [os.path.join(base_dir, ".env"), os.path.join(base_dir, "..", ".env"), ".env", "../.env"]:
+        if os.path.isfile(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        if "=" in line:
+                            k, v = line.split("=", 1)
+                            k = k.strip()
+                            v = v.strip().strip('"').strip("'")
+                            if k and k not in os.environ:
+                                os.environ[k] = v
+                logger.info(f"Loaded environment from {env_path}")
+                break
+            except Exception as e:
+                logger.warning(f"Failed to load .env from {env_path}: {e}")
+
+_load_dotenv()
+
 OLLAMA_URL   = os.environ.get("OLLAMA_URL",   "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:1.5b")
 OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "15"))
@@ -47,11 +72,11 @@ BACKEND_ORIGIN = _normalise_backend_base(_RAW_BACKEND_URL)
 BACKEND_API_V1 = f"{BACKEND_ORIGIN}/api/v1"
 
 DB_CONFIG = {
-    "host":     os.environ.get("DB_HOST",     "localhost"),
-    "port":     int(os.environ.get("DB_PORT", "5433")),
-    "database": os.environ.get("DB_NAME",     "issue_tracker_db"),
-    "user":     os.environ.get("DB_USER",     "postgres"),
-    "password": os.environ.get("DB_PASSWORD", "postgres"),
+    "host":     os.environ.get("POSTGRES_HOST", os.environ.get("DB_HOST", "localhost")),
+    "port":     int(os.environ.get("POSTGRES_PORT", os.environ.get("DB_PORT", "5432"))),
+    "database": os.environ.get("POSTGRES_DB",   os.environ.get("DB_NAME", "issue_tracker_db")),
+    "user":     os.environ.get("POSTGRES_USER", os.environ.get("DB_USER", "postgres")),
+    "password": os.environ.get("POSTGRES_PASSWORD", os.environ.get("DB_PASSWORD", "postgres")),
 }
 
 FAQ_DATA: List[Dict] = []
@@ -75,6 +100,17 @@ RÈGLES:
 4. Si la demande concerne les congés, explique directement la procédure sans demander le type de congé.
 
 Réponds uniquement en français de manière utile et directe."""
+
+# ==================== RAG (Semantic FAQ Search) ====================
+
+from rag_faq import (
+    hybrid_faq_search,
+    initialize_rag,
+    set_original_keyword_search,
+    build_rag_context,
+    RAG_PROMPT_TEMPLATE,
+    rebuild_rag_index,
+)
 
 # ==================== FAQ ====================
 
@@ -794,26 +830,61 @@ def chat():
                 "waitingFor":        "ticket_description",
             })
 
-        # ── STEP 4 : normal conversation ──
+        # ── STEP 4 : normal conversation with RAG ──
         conversation_manager.add_message(session_id, "user", message)
 
-        # 4a — FAQ first (instant)
-        faq_answer, faq_score, faq_category = search_faq(message)
-        if faq_answer:
-            logger.info(f"🔍 FAQ match (score={faq_score:.2f})")
+        # 4a — Hybrid FAQ search: keyword first (fast), then semantic (embeddings)
+        faq_answer, faq_score, faq_category, faq_source, rag_results = hybrid_faq_search(message)
+
+        if faq_answer and faq_source in ("keyword", "semantic_direct"):
+            # High-confidence answer → return directly (instant)
+            logger.info(f"🔍 FAQ direct match: source={faq_source}, score={faq_score:.2f}")
             full_answer = f"{faq_answer}\n\n---\n❓ **Cette réponse vous a-t-elle aidé ?** (Oui/Non)"
             conversation_manager.add_message(session_id, "assistant", full_answer)
             return jsonify({
-                "sessionId":   session_id,
-                "response":    full_answer,
+                "sessionId":     session_id,
+                "response":      full_answer,
                 "need_feedback": True,
-                "source":      "faq",
+                "source":        "faq",
+                "rag_source":    faq_source,
             })
 
-        # 4b — Ollama LLM
+        if faq_source == "semantic_rag" and rag_results:
+            # Medium-confidence semantic match → pass FAQ context to Ollama (RAG)
+            logger.info(f"🔎 RAG context found ({len(rag_results)} entries) → calling Ollama with FAQ context")
+            faq_context = build_rag_context(rag_results)
+            rag_prompt = RAG_PROMPT_TEMPLATE.format(faq_context=faq_context, user_query=message)
+            ollama_result = call_ollama(rag_prompt)
+
+            if ollama_result["success"]:
+                answer = ollama_result["response"]
+                source = "rag_llm"
+            else:
+                # Fallback: use best FAQ answer directly if Ollama failed
+                answer = rag_results[0]["answer"] if rag_results else ""
+                if answer:
+                    answer = f"{answer}\n\n---\n*💡 Réponse issue de la FAQ*"
+                    source = "rag_fallback"
+                else:
+                    answer = _ollama_fallback_message(ollama_result, message)
+                    source = "fallback"
+
+            full_answer = f"{answer}\n\n---\n❓ **Cette réponse vous a-t-elle aidé ?** (Oui/Non)"
+            conversation_manager.add_message(session_id, "assistant", full_answer)
+            return jsonify({
+                "sessionId":     session_id,
+                "response":      full_answer,
+                "need_feedback": True,
+                "source":        source,
+                "rag_source":    "semantic_rag",
+                "rag_matches":   len(rag_results),
+            })
+
+        # 4b — No FAQ match at all → Ollama LLM without context
+        logger.info("❓ No FAQ match → using Ollama directly")
         ollama_result = call_ollama(message)
 
-        # Save question as "unanswered" (no FAQ match) for admin review
+        # Save question as "unanswered" for admin review (only if no FAQ match at all)
         category = classify_demand(message)
         save_unanswered_question(message, category, user_email, session_id)
 
@@ -921,30 +992,128 @@ def health():
         pass
 
     status = "healthy" if (ollama_ok and model_ready) else "degraded"
+    # Check RAG status
+    rag_ok = False
+    try:
+        from rag_faq import _faiss_index
+        rag_ok = _faiss_index is not None
+    except Exception:
+        pass
+
     return jsonify({
         "status":      status,
         "ollama":      ollama_ok,
         "model":       OLLAMA_MODEL,
         "model_ready": model_ready,
         "faq_count":   len(FAQ_DATA),
+        "rag_ready":   rag_ok,
         "timeout":     f"{OLLAMA_TIMEOUT}s",
     })
 
 
+@app.route("/rag/reindex", methods=["POST"])
+def rag_reindex():
+    """
+    Force rebuild the RAG index from current FAQ data.
+    Call this endpoint whenever FAQ data changes (admin adds/edits FAQs).
+    """
+    global FAQ_DATA
+    try:
+        logger.info("🔄 Triggering RAG reindex...")
+        # Reload FAQ from database
+        FAQ_DATA = load_faq()
+        logger.info(f"📚 FAQ reloaded: {len(FAQ_DATA)} entries")
+
+        # Rebuild the FAISS index
+        ok = rebuild_rag_index(FAQ_DATA)
+        if ok:
+            logger.info("✅ RAG index rebuilt successfully")
+            return jsonify({
+                "success": True,
+                "message": f"Index RAG reconstruit avec {len(FAQ_DATA)} entrées FAQ",
+                "faq_count": len(FAQ_DATA),
+            })
+        else:
+            logger.error("❌ RAG index rebuild failed")
+            return jsonify({
+                "success": False,
+                "message": "Échec de la reconstruction de l'index RAG",
+            }), 500
+    except Exception as e:
+        logger.error(f"❌ RAG reindex error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/rag/search", methods=["POST"])
+def rag_search():
+    """
+    Test endpoint: perform semantic search against FAQ and return results.
+    Useful for debugging and testing the RAG system.
+    """
+    try:
+        data = request.get_json()
+        query = (data.get("query") or "").strip()
+        if not query:
+            return jsonify({"error": "Query required"}), 400
+
+        from rag_faq import semantic_search, rerank_results
+
+        # Semantic search
+        results = semantic_search(query, top_k=5)
+
+        # Rerank if results exist
+        if results:
+            results = rerank_results(query, results, top_k=5)
+
+        return jsonify({
+            "query": query,
+            "results": [
+                {
+                    "id": r["id"],
+                    "question": r["question"],
+                    "category": r["category"],
+                    "score": round(r.get("score", 0), 3),
+                    "rerank_score": round(r.get("rerank_score", 0), 3) if "rerank_score" in r else None,
+                }
+                for r in results
+            ],
+            "total": len(results),
+        })
+    except Exception as e:
+        logger.error(f"RAG search error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/", methods=["GET"])
 def root():
+    # Check RAG status
+    rag_ok = False
+    try:
+        from rag_faq import _faiss_index
+        rag_ok = _faiss_index is not None
+    except Exception:
+        pass
+
     return jsonify({
         "service": "Chatbot Service — Air Algérie IssueTracker",
-        "version": "6.0 — qwen2.5:1.5b",
+        "version": "6.0 — RAG + qwen2.5:1.5b",
         "model":   OLLAMA_MODEL,
         "backend_api": BACKEND_API_V1,
+        "rag_ready": rag_ok,
         "flow":    [
-            "1. FAQ search (instant)",
-            "2. Ollama LLM (qwen2.5:1.5b — fast)",
-            "3. Feedback (Oui/Non)",
-            "4. Ask description if negative feedback",
-            "5. Auto ticket creation",
+            "1. Hybrid FAQ search (keyword fast + semantic embeddings)",
+            "2a. High-confidence FAQ match → direct answer (instant)",
+            "2b. Medium-confidence FAQ match → RAG with Ollama (context + LLM)",
+            "3. No FAQ match → Ollama LLM alone",
+            "4. Feedback (Oui/Non) → create ticket if negative",
+            "5. Auto ticket creation in backend",
         ],
+        "endpoints": {
+            "POST /chat": "Main chat endpoint",
+            "POST /rag/reindex": "Rebuild RAG index after FAQ changes",
+            "POST /rag/search": "Test semantic search (debug)",
+            "GET /health": "Health check",
+        },
     })
 
 # ==================== STARTUP ====================
@@ -962,6 +1131,18 @@ def initialize():
     except Exception as e:
         logger.warning(f"FAQ load failed: {e} — using empty list")
         FAQ_DATA = []
+
+    # Initialize RAG (semantic FAQ search with embeddings)
+    try:
+        # Register the original keyword search as fallback for the hybrid search
+        set_original_keyword_search(search_faq)
+        rag_ok = initialize_rag(FAQ_DATA)
+        if rag_ok:
+            logger.info("✅ RAG system ready (hybrid: keyword + semantic)")
+        else:
+            logger.warning("⚠️ RAG system not available — falling back to keyword-only search")
+    except Exception as e:
+        logger.warning(f"⚠️ RAG initialization failed: {e} — using keyword-only search")
 
     # Check Ollama + model
     try:

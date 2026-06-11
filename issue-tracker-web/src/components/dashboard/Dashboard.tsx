@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
       navigate("/login");
       return;
     }
-    
+
     if (auth?.role !== "ADMIN") {
       navigate("/projects");
     }
@@ -162,7 +162,7 @@ const Dashboard: React.FC = () => {
             {viewMode === "stats" && (
               <>
                 <StatsCards stats={data.stats} />
-                
+
                 {slaStats && (
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mt-8 mb-8">
                     <div className="relative overflow-hidden rounded-2xl border border-base-300/60 bg-base-100/80 p-6 shadow-sm backdrop-blur-xl group">
@@ -174,7 +174,7 @@ const Dashboard: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="relative overflow-hidden rounded-2xl border border-base-300/60 bg-base-100/80 p-6 shadow-sm backdrop-blur-xl group">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-error/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-error/20 transition-colors"></div>
                       <h3 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-2">Tickets SLA Dépassé</h3>
@@ -182,7 +182,7 @@ const Dashboard: React.FC = () => {
                         <p className="text-4xl font-black tracking-tight text-error">{slaStats.breachedTickets}</p>
                       </div>
                     </div>
-                    
+
                     <div className="relative overflow-hidden rounded-2xl border border-base-300/60 bg-base-100/80 p-6 shadow-sm backdrop-blur-xl group">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-warning/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-warning/20 transition-colors"></div>
                       <h3 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-2">Tickets à Risque</h3>
@@ -190,7 +190,7 @@ const Dashboard: React.FC = () => {
                         <p className="text-4xl font-black tracking-tight text-warning">{slaStats.atRiskTickets}</p>
                       </div>
                     </div>
-                    
+
                     <div className="relative overflow-hidden rounded-2xl border border-base-300/60 bg-base-100/80 p-6 shadow-sm backdrop-blur-xl group">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-success/10 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-success/20 transition-colors"></div>
                       <h3 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-2">Résolus dans les Temps</h3>
@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
+
                 <Charts
                   statusDistribution={data.statusDistribution}
                   departmentStats={data.departmentStats}
@@ -208,8 +208,8 @@ const Dashboard: React.FC = () => {
                 />
               </>
             )}
-            {viewMode === "kanban" && <KanbanBoard projectId={undefined} departmentId={undefined} />}
-            {viewMode === "gantt" && <GanttChart projectId={undefined} departmentId={undefined} />}
+            {viewMode === "kanban" && <KanbanBoard projectId={filters.projectId} departmentId={filters.departmentId} />}
+            {viewMode === "gantt" && <GanttChart projectId={filters.projectId} departmentId={filters.departmentId} />}
           </div>
         </div>
       </section>

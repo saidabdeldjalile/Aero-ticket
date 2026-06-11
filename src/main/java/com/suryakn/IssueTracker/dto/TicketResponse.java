@@ -23,6 +23,7 @@ public class TicketResponse {
     private Priority priority;
     private IssueType issueType;
     private String category;
+    private Long categoryId;
     private List<CommentDto> comments;
     // attachments removed
     private LocalDateTime createdAt;

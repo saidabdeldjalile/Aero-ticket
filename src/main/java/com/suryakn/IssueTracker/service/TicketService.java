@@ -7,6 +7,7 @@ import com.suryakn.IssueTracker.duplicate.DuplicateTicketRequest;
 import com.suryakn.IssueTracker.duplicate.DuplicateTicketService;
 import com.suryakn.IssueTracker.duplicate.PythonResponse;
 import com.suryakn.IssueTracker.entity.*;
+import com.suryakn.IssueTracker.repository.CategoryRepository;
 import com.suryakn.IssueTracker.repository.ProjectRepository;
 import com.suryakn.IssueTracker.repository.TicketRepository;
 import com.suryakn.IssueTracker.repository.UserRepository;
@@ -45,6 +46,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final CategoryRepository categoryRepository;
     private final DuplicateTicketService duplicateTicketService;
     private final ClassificationService classificationService;
     private final RoutingService routingService;
@@ -342,6 +344,14 @@ public class TicketService {
                 }
             }
             
+            // Resolve category entity
+            Category categoryEntity = null;
+            if (ticketRequest.getCategoryId() != null) {
+                categoryEntity = categoryRepository.findById(ticketRequest.getCategoryId()).orElse(null);
+            } else if (defaultCategory != null && !defaultCategory.isEmpty()) {
+                categoryEntity = categoryRepository.findByName(defaultCategory).orElse(null);
+            }
+            
             // Create and save ticket
             Ticket ticket = Ticket.builder()
                 .title(ticketRequest.getTitle())
@@ -349,6 +359,7 @@ public class TicketService {
                 .status(defaultStatus)
                 .priority(defaultPriority)
                 .category(defaultCategory)
+                .categoryEntity(categoryEntity)
                 .issueType(ticketRequest.getIssueType())
                 .routedDepartmentName(routedDepartment != null ? routedDepartment.getName() : null)
                 .routingReason(routingReason)
@@ -726,6 +737,7 @@ public class TicketService {
                 .priority(ticket.getPriority())
                 .issueType(ticket.getIssueType())
                 .category(ticket.getCategory())
+                .categoryId(ticket.getCategoryEntity() != null ? ticket.getCategoryEntity().getId() : null)
                 .routedDepartmentName(ticket.getRoutedDepartmentName())
                 .routingReason(ticket.getRoutingReason())
                 .workflowStage(ticket.getWorkflowStage())

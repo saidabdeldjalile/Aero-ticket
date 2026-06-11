@@ -9,5 +9,14 @@ public enum IssueType {
     ServiceRequest,
     Question,
     Improvement,
-    Change
+    Change,
+    Safety,
+    Quality,
+    Audit,
+    Compliance,
+    Passenger,
+    GroundOps,
+    Training,
+    Purchase,
+    Cargo
 }

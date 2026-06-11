@@ -1,4 +1,4 @@
-import {  Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import Layout from "./layout";
 
@@ -22,6 +22,7 @@ import NotificationsPage from "./notifications";
 import Dashboard from "./components/dashboard/Dashboard";
 import KnowledgeCenter from "./knowledgecenter";
 import SlaPage from "./sla";
+import CategoryList from "./categorylist";
 
 // Helper function to get current theme
 const getToastTheme = () => {
@@ -50,16 +51,16 @@ export default function App() {
         pauseOnHover
         theme={getToastTheme()}
 
-        // transition: Bounce,
+      // transition: Bounce,
       />
-<Routes>
-         <Route path="/" element={<Layout />}>
-           {/* <Route index element={<Navigate to="/projects" replace />} /> */}
-           <Route index element={<Home/>} />
-           <Route path="/register" element={<Registrationform />} />
-           <Route path="/login" element={<Loginform />} />
-           <Route path="/forgot-password" element={<ForgotPassword />} />
-           <Route path="/reset-password" element={<ResetPassword />} />
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          {/* <Route index element={<Navigate to="/projects" replace />} /> */}
+          <Route index element={<Home />} />
+          <Route path="/register" element={<Registrationform />} />
+          <Route path="/login" element={<Loginform />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<RequireAuth />}>
             <Route path="/projects" element={<ProjectList />} />
             <Route path="/projects/:pid/tickets" element={<Testing />} />
@@ -74,6 +75,7 @@ export default function App() {
             <Route path="/knowledge" element={<KnowledgeCenter />} />
             <Route path="/departments" element={<DepartmentList />} />
             <Route path="/sla" element={<SlaPage />} />
+            <Route path="/categories" element={<CategoryList />} />
             {/* <Route path="/create" element={<CreateTicketBody />} /> */}
           </Route>
           <Route path="/themes" element={<Themes />} />

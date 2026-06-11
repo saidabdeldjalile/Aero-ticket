@@ -1,10 +1,16 @@
 import axios from "axios";
 import config from "./config";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
-import { Eye, EyeOff, User, Mail, Lock, Briefcase, ArrowRight, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, Building, ArrowRight, CheckCircle } from "lucide-react";
+
+interface Department {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 function Registrationform() {
   const { t } = useTranslation();
@@ -12,11 +18,23 @@ function Registrationform() {
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get(`${config.apiUrl}/departments`, { params: { size: 100 } })
+      .then((res: any) => {
+        const data = res.data?.content || res.data || [];
+        setDepartments(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        console.error("Failed to load departments");
+      });
+  }, []);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -29,7 +47,7 @@ function Registrationform() {
         password: password,
         email: email,
         role: "USER",
-        registrationNumber: registrationNumber,
+        departmentId: departmentId ? Number(departmentId) : null,
       });
       toast.success(t('common.message.success'));
       setTimeout(() => {
@@ -87,7 +105,7 @@ function Registrationform() {
                 <div className="mb-12">
                   <div className="bg-white rounded-2xl p-4 inline-block shadow-lg">
                     <img
-                      src="/images/air-algerie-logo.png"
+                      src="/images/lg.png"
                       alt="Air Algeria Logo"
                       className="h-14 w-auto object-contain"
                     />
@@ -122,7 +140,7 @@ function Registrationform() {
 
               <div className="relative z-10 mt-12">
                 <p className="text-white/40 text-[10px] uppercase tracking-widest">
-                  © 2024 Air Algérie Issue Tracker
+                  © 2026 Air Algérie Issue Tracker
                 </p>
               </div>
 
@@ -179,21 +197,24 @@ function Registrationform() {
                   </div>
                 </div>
 
-                {/* Matricule Field */}
+                {/* Department Selector (replaces Matricule field) */}
                 <div className="relative">
-                  <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${focusedField === 'matricule' || registrationNumber ? 'text-red-600' : 'text-gray-400'}`}>
-                    <Briefcase className="w-4 h-4" />
+                  <div className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${focusedField === 'department' || departmentId ? 'text-red-600' : 'text-gray-400'}`}>
+                    <Building className="w-4 h-4" />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Matricule"
-                    className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all"
-                    value={registrationNumber}
-                    onFocus={() => setFocusedField('matricule')}
+                  <select
+                    className="w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-red-600 focus:ring-2 focus:ring-red-600/10 transition-all appearance-none"
+                    value={departmentId}
+                    onFocus={() => setFocusedField('department')}
                     onBlur={() => setFocusedField(null)}
-                    onChange={(e) => setRegistrationNumber(e.target.value)}
+                    onChange={(e) => setDepartmentId(e.target.value)}
                     required
-                  />
+                  >
+                    <option value="" disabled>Sélectionnez votre département</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>{dept.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Email Field */}

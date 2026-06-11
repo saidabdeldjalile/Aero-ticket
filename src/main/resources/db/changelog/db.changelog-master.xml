@@ -12,6 +12,7 @@
     <include file="004-unanswered-questions.sql" relativeToChangelogFile="true"/>
     <include file="005-faq-seed.sql" relativeToChangelogFile="true"/>
     <include file="006-migrate-status.xml" relativeToChangelogFile="true"/>
-
+    <include file="007-category-type-relation.xml" relativeToChangelogFile="true"/>
+    <include file="008-issue-type-def.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

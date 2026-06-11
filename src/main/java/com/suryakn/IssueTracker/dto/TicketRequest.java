@@ -35,6 +35,8 @@ public class TicketRequest {
     @Size(max = 100, message = "Category must not exceed 100 characters")
     private String category;
 
+    private Long categoryId;
+
     @Email(message = "Reporter email must be valid")
     private String reporter;
 

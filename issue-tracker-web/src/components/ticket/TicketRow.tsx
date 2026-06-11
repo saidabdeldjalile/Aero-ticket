@@ -31,7 +31,7 @@ export default function TicketRow({ ticket, canDelete, onDelete }: TicketRowProp
         <td>
           <button
             onClick={() => onDelete(ticket.id)}
-            className="btn btn-ghost btn-xs text-error hover:bg-error/10"
+            className="rounded-xl bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-red-700 active:scale-95"
           >
             Supprimer
           </button>

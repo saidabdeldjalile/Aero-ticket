@@ -8,6 +8,7 @@ import com.suryakn.IssueTracker.dto.TicketResponse;
 import com.suryakn.IssueTracker.dto.TicketUpdateRequest;
 import com.suryakn.IssueTracker.entity.Priority;
 import com.suryakn.IssueTracker.entity.Status;
+import com.suryakn.IssueTracker.entity.UserEntity;
 import com.suryakn.IssueTracker.service.TicketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -70,6 +73,15 @@ public class TicketController {
 
     @PostMapping
     public ResponseEntity<TicketResponse> addTicket(@Valid @RequestBody TicketRequest newTicket) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserEntity) {
+            UserEntity currentUser = (UserEntity) authentication.getPrincipal();
+            // For normal USER role: force creator to be the authenticated user and auto-assign to department support
+            if ("USER".equals(currentUser.getRole().name())) {
+                newTicket.setReporter(currentUser.getEmail());
+                newTicket.setAssignee(null);
+            }
+        }
         return ticketService.addTicket(newTicket);
     }
 

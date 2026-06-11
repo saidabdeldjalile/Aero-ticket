@@ -14,4 +14,6 @@ public class AuthenticationResponse {
     private String token;
     private Role role;
     private Long departmentId;
+    private String firstName;
+    private String lastName;
 }

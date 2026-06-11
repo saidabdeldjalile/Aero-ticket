@@ -20,7 +20,8 @@ import {
   Moon,
   UserCircle,
   MessageSquare,
-  Building
+  Building,
+  Layers
 } from "lucide-react";
 
 export default function NavBar() {
@@ -223,6 +224,18 @@ export default function NavBar() {
 
                           {/* Menu Items */}
                           <div className="p-2">
+                            {auth?.role === "ADMIN" && (
+                              <Link
+                                to="/categories"
+                                onClick={() => setIsDropdownOpen(false)}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                              >
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500">
+                                  <Layers className="w-4 h-4" />
+                                </div>
+                                <span className="font-medium">{t('navbar.categories')}</span>
+                              </Link>
+                            )}
                             <Link
                               to="/settings"
                               onClick={() => setIsDropdownOpen(false)}
@@ -335,6 +348,16 @@ export default function NavBar() {
 
               <div className="h-px bg-gray-200 dark:bg-gray-700 my-3"></div>
 
+              {auth?.role === "ADMIN" && (
+                <Link
+                  to="/categories"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                >
+                  <Layers className="w-4 h-4" />
+                  <span>{t('navbar.categories')}</span>
+                </Link>
+              )}
               <Link
                 to="/settings"
                 onClick={() => setIsDrawerOpen(false)}

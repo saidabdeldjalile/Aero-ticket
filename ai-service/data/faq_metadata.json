@@ -1,0 +1,88 @@
+[
+  {
+    "id": 1,
+    "question": "vpn télétravail accès distant",
+    "answer": "Pour obtenir un accès VPN pour le télétravail, créez un ticket IT. Le service informatique vous fournira vos identifiants de connexion sous 24h ouvrées.",
+    "category": "IT",
+    "keywords": [
+      "vpn",
+      "télétravail",
+      "accès distant",
+      "connexion"
+    ]
+  },
+  {
+    "id": 2,
+    "question": "connexion wifi réseau sans fil",
+    "answer": "Pour vous connecter au WiFi Air Algérie, sélectionnez le réseau 'AirAlgerie-WiFi' et utilisez le mot de passe 'AIRALGERIE2024'. Si le problème persiste, contactez l'IT.",
+    "category": "IT",
+    "keywords": [
+      "wifi",
+      "réseau",
+      "connexion",
+      "internet"
+    ]
+  },
+  {
+    "id": 3,
+    "question": "créer ticket ouvrir demande",
+    "answer": "Pour créer un ticket, cliquez sur 'Nouveau Ticket' dans le menu principal, remplissez le formulaire avec les détails de votre demande et soumettez.",
+    "category": "IT",
+    "keywords": [
+      "ticket",
+      "demande",
+      "créer",
+      "ouvrir"
+    ]
+  },
+  {
+    "id": 4,
+    "question": "mot de passe oublié réinitialiser",
+    "answer": "Pour réinitialiser votre mot de passe, cliquez sur 'Mot de passe oublié' sur la page de connexion. Un email vous sera envoyé avec les instructions.",
+    "category": "IT",
+    "keywords": [
+      "mot de passe",
+      "oublié",
+      "réinitialiser",
+      "compte"
+    ]
+  },
+  {
+    "id": 5,
+    "question": "congé demande absence",
+    "answer": "Pour faire une demande de congé, soumettez un ticket dans la catégorie RH avec les dates souhaitées. Votre responsable sera notifié pour validation.",
+    "category": "RH",
+    "keywords": [
+      "congé",
+      "absence",
+      "rh"
+    ]
+  },
+  {
+    "id": 6,
+    "question": "demande matériel ordinateur écran imprimante",
+    "answer": "Pour demander du matériel (ordinateur, écran, imprimante, etc.), créez un ticket dans la catégorie Matériel en précisant l'équipement, le site concerné et l'urgence. Le service Achats traitera votre demande.",
+    "category": "Matériel",
+    "keywords": [
+      "matériel",
+      "équipement",
+      "ordinateur",
+      "écran",
+      "imprimante",
+      "achat"
+    ]
+  },
+  {
+    "id": 7,
+    "question": "panne connexion email internet réseau",
+    "answer": "En cas de panne réseau, email ou connexion internet, créez un ticket IT. Le support technique interviendra dans les plus brefs délais.",
+    "category": "IT",
+    "keywords": [
+      "panne",
+      "connexion",
+      "email",
+      "internet",
+      "réseau"
+    ]
+  }
+]

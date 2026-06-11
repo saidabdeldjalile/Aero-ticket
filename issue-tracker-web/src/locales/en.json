@@ -56,7 +56,20 @@
       "bug": "Bug",
       "feature": "Feature",
       "task": "Task",
-      "improvement": "Improvement"
+      "improvement": "Improvement",
+      "incident": "Incident",
+      "serviceRequest": "Service Request",
+      "question": "Question",
+      "change": "Change",
+      "safety": "Safety",
+      "quality": "Quality",
+      "audit": "Audit",
+      "compliance": "Compliance",
+      "cargo": "Cargo",
+      "training": "Training",
+      "purchase": "Purchase",
+      "groundOps": "Ground Ops",
+      "passenger": "Passenger"
     },
     "categories": {
       "network": "Network Failure",
@@ -469,6 +482,8 @@
   },
   "navbar": {
     "dashboard": "Dashboard",
+    "categories": "Categories",
+    "issueTypes": "Issue Types",
     "projects": "Projects",
     "tickets": "Tickets",
     "knowledge": "Knowledge",

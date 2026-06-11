@@ -6,6 +6,7 @@ import com.suryakn.IssueTracker.auth.dtos.RegisterRequest;
 import com.suryakn.IssueTracker.config.JwtService;
 import com.suryakn.IssueTracker.entity.Role;
 import com.suryakn.IssueTracker.entity.UserEntity;
+import com.suryakn.IssueTracker.repository.DepartmentRepository;
 import com.suryakn.IssueTracker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,10 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +30,9 @@ class AuthenticateServiceTest {
 
     @Mock
     private UserRepository repository;
+
+    @Mock
+    private DepartmentRepository departmentRepository;
 
     @Mock
     private PasswordEncoder encoder;
@@ -50,7 +54,7 @@ class AuthenticateServiceTest {
                 .email("john.doe@example.com")
                 .password("encodedPassword")
                 .role(Role.USER)
-                .registrationNumber("REG001")
+                .registrationNumber("UNKNOWN-0001")
                 .build();
     }
 
@@ -62,10 +66,10 @@ class AuthenticateServiceTest {
                 .email("jane.smith@example.com")
                 .password("password123")
                 .role("USER")
-                .registrationNumber("REG002")
                 .build();
 
         when(repository.findAllByEmail(request.getEmail())).thenReturn(new ArrayList<>());
+        when(repository.existsByRegistrationNumber(anyString())).thenReturn(false);
         when(encoder.encode(request.getPassword())).thenReturn("encodedPassword");
         when(jwtService.generateToken(any(UserEntity.class))).thenReturn("jwtToken123");
 

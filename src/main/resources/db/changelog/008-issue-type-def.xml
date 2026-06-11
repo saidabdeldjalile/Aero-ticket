@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="028-create-issue-type-def" author="liquibase">
+        <createTable tableName="issue_type_def">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="label" type="VARCHAR(255)"/>
+            <column name="description" type="TEXT"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="029-seed-issue-type-def" author="liquibase">
+        <insert tableName="issue_type_def">
+            <column name="name" value="Bug"/>
+            <column name="label" value="Bug"/>
+            <column name="description" value="Anomalie logicielle ou système"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Feature"/>
+            <column name="label" value="Fonctionnalité"/>
+            <column name="description" value="Nouvelle fonctionnalité ou évolution"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Task"/>
+            <column name="label" value="Tâche"/>
+            <column name="description" value="Tâche à réaliser"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Support"/>
+            <column name="label" value="Support"/>
+            <column name="description" value="Demande de support"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Incident"/>
+            <column name="label" value="Incident"/>
+            <column name="description" value="Incident nécessitant une intervention urgente"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="ServiceRequest"/>
+            <column name="label" value="Demande de service"/>
+            <column name="description" value="Demande de service standard"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Question"/>
+            <column name="label" value="Question"/>
+            <column name="description" value="Question ou demande d'information"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Improvement"/>
+            <column name="label" value="Amélioration"/>
+            <column name="description" value="Proposition d'amélioration"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Change"/>
+            <column name="label" value="Changement"/>
+            <column name="description" value="Demande de changement"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Safety"/>
+            <column name="label" value="Sécurité"/>
+            <column name="description" value="Problème de sécurité"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Quality"/>
+            <column name="label" value="Qualité"/>
+            <column name="description" value="Problème de qualité"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Audit"/>
+            <column name="label" value="Audit"/>
+            <column name="description" value="Demande d'audit"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Compliance"/>
+            <column name="label" value="Conformité"/>
+            <column name="description" value="Conformité réglementaire"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Passenger"/>
+            <column name="label" value="Passager"/>
+            <column name="description" value="Problème passager"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="GroundOps"/>
+            <column name="label" value="Opérations au sol"/>
+            <column name="description" value="Opérations au sol"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Training"/>
+            <column name="label" value="Formation"/>
+            <column name="description" value="Demande de formation"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Purchase"/>
+            <column name="label" value="Achat"/>
+            <column name="description" value="Demande d'achat"/>
+        </insert>
+        <insert tableName="issue_type_def">
+            <column name="name" value="Cargo"/>
+            <column name="label" value="Fret"/>
+            <column name="description" value="Problème de fret/cargo"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

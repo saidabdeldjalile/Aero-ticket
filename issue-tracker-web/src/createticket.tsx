@@ -22,6 +22,7 @@ interface IssueType {
   category: string;
   label: string;
   issueType: string;
+  categoryId: number;
   reporter: string;
   assignee: string;
 }
@@ -30,6 +31,41 @@ interface Project {
   id: number;
   name: string;
 }
+
+interface CategoryDTO {
+  id: number;
+  name: string;
+  label: string;
+  description?: string;
+  active: boolean;
+  allowedIssueTypes: string[];
+}
+
+interface IssueTypeOption {
+  value: string;
+  translationKey: string;
+  defaultLabel: string;
+}
+
+const ISSUE_TYPE_OPTIONS: IssueTypeOption[] = [
+  { value: "Bug", translationKey: "createTicket.types.bug", defaultLabel: "Bug" },
+  { value: "Feature", translationKey: "createTicket.types.feature", defaultLabel: "Feature" },
+  { value: "Task", translationKey: "createTicket.types.task", defaultLabel: "Task" },
+  { value: "Improvement", translationKey: "createTicket.types.improvement", defaultLabel: "Improvement" },
+  { value: "Incident", translationKey: "createTicket.types.incident", defaultLabel: "Incident" },
+  { value: "ServiceRequest", translationKey: "createTicket.types.serviceRequest", defaultLabel: "Service Request" },
+  { value: "Question", translationKey: "createTicket.types.question", defaultLabel: "Question" },
+  { value: "Change", translationKey: "createTicket.types.change", defaultLabel: "Change" },
+  { value: "Safety", translationKey: "createTicket.types.safety", defaultLabel: "Safety" },
+  { value: "Quality", translationKey: "createTicket.types.quality", defaultLabel: "Quality" },
+  { value: "Audit", translationKey: "createTicket.types.audit", defaultLabel: "Audit" },
+  { value: "Compliance", translationKey: "createTicket.types.compliance", defaultLabel: "Compliance" },
+  { value: "Cargo", translationKey: "createTicket.types.cargo", defaultLabel: "Cargo" },
+  { value: "Training", translationKey: "createTicket.types.training", defaultLabel: "Training" },
+  { value: "Purchase", translationKey: "createTicket.types.purchase", defaultLabel: "Purchase" },
+  { value: "GroundOps", translationKey: "createTicket.types.groundOps", defaultLabel: "Ground Ops" },
+  { value: "Passenger", translationKey: "createTicket.types.passenger", defaultLabel: "Passenger" },
+];
 
 interface similarTicket {
   id: number;
@@ -46,12 +82,15 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
   const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [similarTickets, setSimilarTickets] = useState<similarTicket[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedScreenshots, setSelectedScreenshots] = useState<ScreenshotPreview[]>([]);
   const [isUploadingScreenshots, setIsUploadingScreenshots] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draftAppliedRef = useRef(false);
+
+  const isAdminOrSupport = auth?.role === "ADMIN" || auth?.role === "SUPPORT";
 
   const [newIssue, setNewIssue] = useState<IssueType>({
     project: "",
@@ -61,6 +100,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
     category: "",
     label: "",
     issueType: "",
+    categoryId: 0,
     reporter: auth?.email || "",
     assignee: "",
   });
@@ -78,6 +118,29 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
       .then((res: AxiosResponse) => {
         const projectsData = res.data?.content || res.data || [];
         setProjects(Array.isArray(projectsData) ? projectsData : []);
+      });
+
+    api
+      .get("/categories")
+      .then((res: AxiosResponse) => {
+        const categoriesData = res.data?.content || res.data || [];
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      })
+      .catch((err) => {
+        // Fallback: if DTO fails, try plain categories
+        api.get("/categories").then((res2: AxiosResponse) => {
+          const data = res2.data?.content || res2.data || [];
+          if (Array.isArray(data)) {
+            setCategories(data.map((c: any) => ({
+              id: c.id,
+              name: c.name,
+              label: c.label,
+              description: c.description,
+              active: c.active ?? true,
+              allowedIssueTypes: c.allowedIssueTypes || []
+            })));
+          }
+        }).catch(() => { });
       });
   }, [refreshKey]);
 
@@ -122,6 +185,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
       category: "",
       label: "",
       issueType: "",
+      categoryId: 0,
       reporter: auth?.email || "",
       assignee: "",
     });
@@ -212,6 +276,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
         description: newIssue.description,
         priority: newIssue.priority,
         category: newIssue.category,
+        categoryId: newIssue.categoryId > 0 ? newIssue.categoryId : undefined,
         issueType: newIssue.issueType || undefined,
         reporter: newIssue.reporter || auth?.email,
         assignee: newIssue.assignee || null,
@@ -299,6 +364,37 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
       <div className=" inline-flex">
         <label className="form-control w-full max-w-xs p-3">
           <div className="label">
+            <span className="label-text">{t('ticket.category')}</span>
+          </div>
+          <select
+            name="category"
+            value={newIssue.category}
+            onChange={(e) => {
+              handleChange(e);
+              const selectedCategory = categories.find(c => c.name === e.target.value);
+              if (selectedCategory) {
+                // Reset issueType if current selection is not allowed in the new category
+                const allowedTypes = selectedCategory.allowedIssueTypes;
+                const newState: any = { categoryId: selectedCategory.id };
+                if (allowedTypes && allowedTypes.length > 0 && !allowedTypes.includes(newIssue.issueType)) {
+                  newState.issueType = "";
+                }
+                setNewIssue(prev => ({ ...prev, ...newState }));
+              }
+            }}
+            className="select select-bordered"
+          >
+            <option value="" disabled>
+              {t('createTicket.selectCategory')}
+            </option>
+            {categories.map((cat: CategoryDTO) => (
+              <option value={cat.name} key={cat.id}>{cat.label || cat.name}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="form-control w-full max-w-xs p-3">
+          <div className="label">
             <span className="label-text">{t('createTicket.issueType', { default: 'Issue Type' })}</span>
           </div>
           <select
@@ -310,14 +406,18 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             <option disabled value="">
               {t('createTicket.selectIssueType')}
             </option>
-            <option value="Bug">{t('createTicket.types.bug', { default: 'Bug' })}</option>
-            <option value="Feature">{t('createTicket.types.feature', { default: 'Feature' })}</option>
-            <option value="Task">{t('createTicket.types.task', { default: 'Task' })}</option>
-            <option value="Improvement">{t('createTicket.types.improvement', { default: 'Improvement' })}</option>
-            <option value="Incident">{t('createTicket.types.incident', { default: 'Incident' })}</option>
-            <option value="ServiceRequest">{t('createTicket.types.serviceRequest', { default: 'Service Request' })}</option>
-            <option value="Question">{t('createTicket.types.question', { default: 'Question' })}</option>
-            <option value="Change">{t('createTicket.types.change', { default: 'Change' })}</option>
+            {(() => {
+              const selectedCat = categories.find(c => c.name === newIssue.category);
+              const allowedTypes = selectedCat?.allowedIssueTypes;
+              const filteredOptions = allowedTypes && allowedTypes.length > 0
+                ? ISSUE_TYPE_OPTIONS.filter(opt => allowedTypes.includes(opt.value))
+                : ISSUE_TYPE_OPTIONS;
+              return filteredOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {t(opt.translationKey, { default: opt.defaultLabel })}
+                </option>
+              ));
+            })()}
           </select>
         </label>
 
@@ -338,28 +438,6 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
             <option value="Medium">{t('priority.medium')}</option>
             <option value="Low">{t('priority.low')}</option>
             <option value="Critical">{t('priority.critical')}</option>
-          </select>
-        </label>
-        <label className="form-control w-full max-w-xs p-3">
-          <div className="label">
-            <span className="label-text">{t('ticket.category')}</span>
-          </div>
-          <select
-            name="category"
-            value={newIssue.category}
-            onChange={(e) => handleChange(e)}
-            className="select select-bordered"
-          >
-            <option value="" disabled>
-              {t('createTicket.selectCategory')}
-            </option>
-            <option value="informatique">{t('createTicket.categories.it', { default: 'Informatique' })}</option>
-            <option value="materiel">{t('createTicket.categories.material', { default: 'Matériel' })}</option>
-            <option value="administratif">{t('createTicket.categories.admin', { default: 'Administratif' })}</option>
-            <option value="maintenance">{t('createTicket.categories.maintenance', { default: 'Maintenance' })}</option>
-            <option value="achat">{t('createTicket.categories.purchase', { default: 'Achat' })}</option>
-            <option value="formation">{t('createTicket.categories.formation', { default: 'Formation' })}</option>
-            <option value="autres">{t('common.other', { default: 'Autres' })}</option>
           </select>
         </label>
       </div>
@@ -455,49 +533,52 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
         )}
       </div>
 
-      <div className="inline-flex">
-        <label className="form-control w-full max-w-xs flex-shrink-0 p-3">
-          <div className="label">
-            <span className="label-text">{t('ticket.assignedTo')}</span>
-          </div>
-          <select
-            value={newIssue.assignee}
-            className="select select-bordered"
-            name="assignee"
-            onChange={(e) => handleChange(e)}
-          >
-            <option value="" disabled>
-              {t('createTicket.selectAssignee')}
-            </option>
-            {users.map((user: User) => (
-              <option value={user.email} key={user.email}>
-                {user.firstName} {user.lastName}
+      {/* Only ADMIN and SUPPORT can see and change reporter/assignee - for USER it's auto-set */}
+      {isAdminOrSupport && (
+        <div className="inline-flex">
+          <label className="form-control w-full max-w-xs flex-shrink-0 p-3">
+            <div className="label">
+              <span className="label-text">{t('ticket.assignedTo')}</span>
+            </div>
+            <select
+              value={newIssue.assignee}
+              className="select select-bordered"
+              name="assignee"
+              onChange={(e) => handleChange(e)}
+            >
+              <option value="" disabled>
+                {t('createTicket.selectAssignee')}
               </option>
-            ))}
-          </select>
-        </label>
+              {users.map((user: User) => (
+                <option value={user.email} key={user.email}>
+                  {user.firstName} {user.lastName}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="form-control w-full max-w-xs flex-shrink-0 p-3">
-          <div className="label">
-            <span className="label-text">{t('ticket.createdBy')}</span>
-          </div>
-          <select
-            value={newIssue.reporter}
-            name="reporter"
-            className="select select-bordered"
-            onChange={(e) => handleChange(e)}
-          >
-            <option value="" disabled>
-              {t('createTicket.selectReporter')}
-            </option>
-            {users.map((user: User) => (
-              <option value={user.email} key={user.email}>
-                {user.firstName} {user.lastName}
+          <label className="form-control w-full max-w-xs flex-shrink-0 p-3">
+            <div className="label">
+              <span className="label-text">{t('ticket.createdBy')}</span>
+            </div>
+            <select
+              value={newIssue.reporter}
+              name="reporter"
+              className="select select-bordered"
+              onChange={(e) => handleChange(e)}
+            >
+              <option value="" disabled>
+                {t('createTicket.selectReporter')}
               </option>
-            ))}
-          </select>
-        </label>
-      </div>
+              {users.map((user: User) => (
+                <option value={user.email} key={user.email}>
+                  {user.firstName} {user.lastName}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
       {isLoading && (
         <div className="flex items-center justify-center">
           <div className="p-3">

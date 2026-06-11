@@ -369,7 +369,7 @@
     </changeSet>
 
     <!-- ==================== VECTOR_TABLE ==================== -->
-    <changeSet id="013-create-vector-table" author="liquibase">
+    <changeSet id="017-create-vector-table" author="liquibase">
         <createTable tableName="vector_table">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -381,7 +381,7 @@
     </changeSet>
 
     <!-- ==================== INDEXES ==================== -->
-    <changeSet id="014-create-indexes" author="liquibase">
+    <changeSet id="018-create-indexes" author="liquibase">
         <!-- Ticket indexes -->
         <createIndex indexName="idx_ticket_status" tableName="ticket">
             <column name="status"/>
