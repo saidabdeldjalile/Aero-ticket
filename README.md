@@ -1,4 +1,4 @@
-# IssueTracker - Système de Gestion de Tickets (Air Algérie)
+# Aero-ticket- Système de Gestion de Tickets (Air Algérie)
 
 Un système complet de gestion de tickets développé avec **Spring Boot** (backend) et **React/TypeScript** (frontend), incluant un assistant intelligent basé sur le LLM **Qwen 2.5**.
 
