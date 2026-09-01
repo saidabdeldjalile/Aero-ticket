@@ -169,22 +169,22 @@ export function TicketDetails({ ticket }: TicketBodyProps) {
       });
   }
 
-  function persistProjectChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newProjectId = Number(e.target.value);
-    setSelectedProjectId(newProjectId);
-    api
-      .patch(`/tickets/${ticket?.id}`, {
-        projectId: newProjectId,
-        modifierEmail: auth?.email,
-        modifierRole: auth?.role,
-      })
-      .then(() => toast.success(`Projet du ticket #${ticket?.id} mis à jour`))
-      .catch((err) => {
-        const errorMessage = err.response?.data?.message || err.message || "Erreur lors du changement de projet";
-        toast.error(errorMessage);
-        setSelectedProjectId(ticket?.project?.id ?? null); // revert on error
-      });
-  }
+   function persistProjectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+     const newProjectId = e.target.value ? Number(e.target.value) : null;
+     setSelectedProjectId(newProjectId);
+     api
+       .patch(`/tickets/${ticket?.id}`, {
+         projectId: newProjectId,
+         modifierEmail: auth?.email,
+         modifierRole: auth?.role,
+       })
+       .then(() => toast.success(`Projet du ticket #${ticket?.id} mis à jour`))
+       .catch((err) => {
+         const errorMessage = err.response?.data?.message || err.message || "Erreur lors du changement de projet";
+         toast.error(errorMessage);
+         setSelectedProjectId(ticket?.project?.id ?? null); // revert on error
+       });
+   }
 
   return (
     <div className="h-full w-full overflow-hidden">

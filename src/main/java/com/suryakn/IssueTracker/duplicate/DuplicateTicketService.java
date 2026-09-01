@@ -57,15 +57,10 @@ public class DuplicateTicketService {
             duplicateTicketRequest.setDescription("");
         }
 
-        if (duplicateTicketRequest.getProjectId() == null) {
-            log.warn("Project ID is null for request: {}", duplicateTicketRequest);
-            return createEmptyResponse();
-        }
-
         try {
             String text = duplicateTicketRequest.getTitle() + " " + duplicateTicketRequest.getDescription();
 
-            List<VectorTable> ticketList = ticketRepository.findAllByProjectId(duplicateTicketRequest.getProjectId());
+            List<VectorTable> ticketList = ticketRepository.findAll();
 
             // Handle null ticket list
             if (ticketList == null) {
@@ -74,7 +69,7 @@ public class DuplicateTicketService {
 
             List<TicketEmbeddingDTO> ticketEmbeddingDTOS = new ArrayList<>();
             for (VectorTable ticket : ticketList) {
-                if (ticket == null) {
+                if (ticket == null || (duplicateTicketRequest.getTicketId() != null && duplicateTicketRequest.getTicketId().equals(ticket.getTicketId()))) {
                     continue;
                 }
                 // Create DTO and validate it

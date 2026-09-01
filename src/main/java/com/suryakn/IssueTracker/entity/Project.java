@@ -30,7 +30,7 @@ public class Project {
     @JsonIgnoreProperties({"projects", "users"})
     private Department department;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnoreProperties({"project", "assignedTo", "createdBy", "comments"})
     private List<Ticket> tickets = new ArrayList<>();
 

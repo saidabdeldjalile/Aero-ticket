@@ -1,7 +1,13 @@
 package com.suryakn.IssueTracker.service;
 
 import com.suryakn.IssueTracker.entity.Department;
+import com.suryakn.IssueTracker.entity.Project;
+import com.suryakn.IssueTracker.entity.Ticket;
+import com.suryakn.IssueTracker.entity.VectorTable;
 import com.suryakn.IssueTracker.repository.DepartmentRepository;
+import com.suryakn.IssueTracker.repository.ProjectRepository;
+import com.suryakn.IssueTracker.repository.TicketRepository;
+import com.suryakn.IssueTracker.repository.VectorTableRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +34,15 @@ class DepartmentServiceTest {
 
     @Mock
     private DepartmentRepository departmentRepository;
+
+    @Mock
+    private ProjectRepository projectRepository;
+
+    @Mock
+    private TicketRepository ticketRepository;
+
+    @Mock
+    private VectorTableRepository vectorTableRepository;
 
     @InjectMocks
     private DepartmentService departmentService;
@@ -106,8 +121,21 @@ class DepartmentServiceTest {
 
     @Test
     void testDeleteDepartment_WhenExists_ShouldDeleteDepartment() {
+        Project project = Project.builder().id(10L).name("Test Project").build();
+        Ticket ticket = Ticket.builder().id(20L).title("Test Ticket").build();
+        project.setTickets(List.of(ticket));
+        testDepartment.setProjects(List.of(project));
+
+        when(departmentRepository.findById(1L)).thenReturn(Optional.of(testDepartment));
+        when(vectorTableRepository.findAllByProjectId(10L)).thenReturn(new ArrayList<>());
+
         departmentService.deleteDepartment(1L);
 
+        verify(departmentRepository, times(1)).findById(1L);
+        verify(vectorTableRepository, times(1)).deleteByTicketId(20L);
+        verify(ticketRepository, times(1)).deleteAll(any());
+        verify(vectorTableRepository, times(1)).findAllByProjectId(10L);
+        verify(projectRepository, times(1)).deleteAll(any());
         verify(departmentRepository, times(1)).deleteById(1L);
     }
 }

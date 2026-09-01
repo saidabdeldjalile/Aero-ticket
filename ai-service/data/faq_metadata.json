@@ -1,6 +1,631 @@
 [
   {
     "id": 1,
+    "question": "Comment configurer le VPN pour le télétravail ?",
+    "answer": "Pour obtenir un accès VPN pour le télétravail, créez un ticket IT. Le service informatique vous fournira vos identifiants de connexion sous 24h ouvrées. Assurez-vous d'avoir le logiciel client VPN installé sur votre machine.",
+    "category": "IT",
+    "keywords": [
+      "VPN",
+      "télétravail",
+      "accès distant",
+      "connexion à distance",
+      "remote",
+      "mot de passe VPN",
+      "client VPN",
+      "OpenVPN",
+      "télé-travail"
+    ]
+  },
+  {
+    "id": 2,
+    "question": "Comment se connecter au Wi-Fi d'Air Algérie ?",
+    "answer": "Pour vous connecter au WiFi Air Algérie, sélectionnez le réseau 'AirAlgerie-WiFi' et utilisez le mot de passe 'AIRALGERIE2024'. Si le problème persiste, contactez le support IT au poste 1234.",
+    "category": "IT",
+    "keywords": [
+      "wifi",
+      "WiFi",
+      "réseau sans fil",
+      "internet sans fil",
+      "connexion WiFi",
+      "mot de passe wifi",
+      "AirAlgerie-WiFi"
+    ]
+  },
+  {
+    "id": 3,
+    "question": "Comment créer un nouveau ticket ?",
+    "answer": "Pour créer un ticket, cliquez sur 'Nouveau Ticket' dans le menu principal, remplissez le formulaire avec les détails de votre demande et soumettez. Vous pouvez aussi discuter avec le chatbot qui peut créer le ticket pour vous.",
+    "category": "IT",
+    "keywords": [
+      "créer ticket",
+      "nouveau ticket",
+      "ouvrir ticket",
+      "comment créer",
+      "demande ticket",
+      "soumettre ticket"
+    ]
+  },
+  {
+    "id": 4,
+    "question": "J'ai oublié mon mot de passe, comment le réinitialiser ?",
+    "answer": "Pour réinitialiser votre mot de passe, cliquez sur 'Mot de passe oublié' sur la page de connexion. Un email vous sera envoyé avec les instructions. Si vous ne recevez pas l'email, vérifiez vos spams ou contactez le support IT.",
+    "category": "IT",
+    "keywords": [
+      "mot de passe oublié",
+      "réinitialiser mot de passe",
+      "changer mot de passe",
+      "password",
+      "reset password",
+      "motdepasse",
+      "mdp",
+      "login",
+      "connexion impossible",
+      "compte bloqué"
+    ]
+  },
+  {
+    "id": 5,
+    "question": "Comment vérifier le statut de mon ticket ?",
+    "answer": "Pour vérifier le statut de vos tickets, allez dans la section 'Mes Tickets' depuis le tableau de bord. Vous y verrez l'état (Ouvert, En cours, Résolu, Fermé) et les commentaires du support.",
+    "category": "IT",
+    "keywords": [
+      "statut ticket",
+      "suivi ticket",
+      "ou est mon ticket",
+      "avancement",
+      "progression",
+      "état ticket",
+      "mes tickets"
+    ]
+  },
+  {
+    "id": 6,
+    "question": "Mon email ne fonctionne pas / problème de messagerie",
+    "answer": "En cas de panne de messagerie, vérifiez d'abord votre connexion réseau. Si le problème persiste, créez un ticket IT. Le support technique interviendra dans les plus brefs délais.",
+    "category": "IT",
+    "keywords": [
+      "email",
+      "messagerie",
+      "mail",
+      "courrier",
+      "webmail",
+      "outlook",
+      "email ne marche pas",
+      "problème email",
+      "boite mail",
+      "boîte de réception",
+      "envoyer mail"
+    ]
+  },
+  {
+    "id": 7,
+    "question": "Comment installer un logiciel sur mon poste ?",
+    "answer": "Pour installer un logiciel, créez un ticket IT avec le nom du logiciel, la version souhaitée et la justification du besoin. Le service informatique validera et procédera à l'installation à distance.",
+    "category": "IT",
+    "keywords": [
+      "installer logiciel",
+      "installation",
+      "logiciel",
+      "application",
+      "installer programme",
+      "déploiement logiciel",
+      "Adobe",
+      "Microsoft Office",
+      "suite bureautique"
+    ]
+  },
+  {
+    "id": 8,
+    "question": "Problème de connexion au réseau / internet",
+    "answer": "En cas de panne réseau, vérifiez d'abord votre câble Ethernet ou WiFi. Si le problème persiste, créez un ticket IT. Le support technique vérifiera les équipements réseau et interviendra si nécessaire.",
+    "category": "IT",
+    "keywords": [
+      "connexion réseau",
+      "réseau",
+      "internet",
+      "panne réseau",
+      "coupure internet",
+      "pas de connexion",
+      "DNS",
+      "Ethernet",
+      "câble réseau"
+    ]
+  },
+  {
+    "id": 9,
+    "question": "Je n'arrive pas à accéder à l'application",
+    "answer": "Si vous ne pouvez pas accéder à une application, vérifiez votre connexion VPN si vous êtes en télétravail. Essayez de vider le cache du navigateur. Si le problème persiste, créez un ticket IT avec copie d'écran de l'erreur.",
+    "category": "IT",
+    "keywords": [
+      "accès application",
+      "application ne marche pas",
+      "application inaccessible",
+      "erreur application",
+      "bug",
+      "crash",
+      "page blanche",
+      "ne charge pas",
+      "500 erreur",
+      "404"
+    ]
+  },
+  {
+    "id": 10,
+    "question": "Comment demander un accès à un système / application ?",
+    "answer": "Pour demander un accès à un système ou une application, créez un ticket IT en précisant le système concerné et le niveau d'accès requis. Votre responsable doit approuver la demande.",
+    "category": "IT",
+    "keywords": [
+      "accès système",
+      "droit accès",
+      "habilitation",
+      "autorisation",
+      "demande accès",
+      "accès application métier"
+    ]
+  },
+  {
+    "id": 11,
+    "question": "Comment demander du matériel informatique ?",
+    "answer": "Pour demander du matériel (ordinateur, écran, imprimante, clavier, souris), créez un ticket dans la catégorie Matériel en précisant l'équipement, le site concerné et l'urgence. Le service Achats traitera votre demande.",
+    "category": "Matériel",
+    "keywords": [
+      "matériel",
+      "équipement",
+      "ordinateur",
+      "PC",
+      "demande matériel",
+      "nouveau PC",
+      "achat matériel",
+      "poste de travail",
+      "laptop",
+      "desktop"
+    ]
+  },
+  {
+    "id": 12,
+    "question": "Mon ordinateur est lent / plante souvent",
+    "answer": "Si votre ordinateur est lent, essayez de redémarrer et de fermer les applications inutilisées. Si le problème persiste, créez un ticket IT. Le support pourra diagnostiquer et planifier une réparation si nécessaire.",
+    "category": "Matériel",
+    "keywords": [
+      "ordinateur lent",
+      "PC lent",
+      "lent",
+      "plante",
+      "freeze",
+      "ram",
+      "disque dur",
+      "performance",
+      "ralentit",
+      "lenteur"
+    ]
+  },
+  {
+    "id": 13,
+    "question": "Problème d'imprimante",
+    "answer": "Si votre imprimante ne fonctionne pas, vérifiez qu'elle est allumée et connectée au réseau. Essayez de redémarrer l'imprimante. Si le problème persiste, créez un ticket IT avec le numéro de série de l'imprimante.",
+    "category": "Matériel",
+    "keywords": [
+      "imprimante",
+      "print",
+      "impression",
+      "imprimer",
+      "toner",
+      "cartouche",
+      "papier",
+      "bourrage papier",
+      "imprimante ne marche pas",
+      "impression impossible"
+    ]
+  },
+  {
+    "id": 14,
+    "question": "Mon écran ne fonctionne plus / clignote",
+    "answer": "Si votre écran présente des anomalies (lignes, clignotement, pas d'image), créez un ticket dans la catégorie Matériel. Précisez la marque, le modèle et la description du problème. Un écran de remplacement vous sera fourni.",
+    "category": "Matériel",
+    "keywords": [
+      "écran",
+      "moniteur",
+      "afficheur",
+      "écran clignote",
+      "lignes écran",
+      "pas d image",
+      "écran noir",
+      "display",
+      "LCD",
+      "LED"
+    ]
+  },
+  {
+    "id": 15,
+    "question": "Demande de téléphone / tablette professionnelle",
+    "answer": "Pour demander un téléphone ou une tablette professionnelle, créez un ticket Matériel avec la justification du besoin. Votre responsable hiérarchique devra approuver la demande avant traitement par le service Achats.",
+    "category": "Matériel",
+    "keywords": [
+      "téléphone",
+      "mobile",
+      "smartphone",
+      "tablette",
+      "iPhone",
+      "Android",
+      "GSM"
+    ]
+  },
+  {
+    "id": 16,
+    "question": "Périphériques : souris, clavier, casque",
+    "answer": "Pour tout problème ou demande de périphérique (souris, clavier, casque, hub USB), créez un ticket dans la catégorie Matériel. Les équipements standards sont fournis sous 48h.",
+    "category": "Matériel",
+    "keywords": [
+      "souris",
+      "clavier",
+      "casque",
+      "périphérique",
+      "hub USB",
+      "USB"
+    ]
+  },
+  {
+    "id": 17,
+    "question": "Comment faire une demande de congés ?",
+    "answer": "Pour faire une demande de congé, créez un ticket dans la catégorie RH avec les dates souhaitées et le type de congé (annuel, maladie, exceptionnel). Votre responsable sera notifié pour validation.",
+    "category": "RH",
+    "keywords": [
+      "congé",
+      "congés",
+      "vacances",
+      "absence",
+      "demande congé",
+      "poser congé",
+      "jours",
+      "Conge",
+      "permission",
+      "repos"
+    ]
+  },
+  {
+    "id": 18,
+    "question": "Je veux consulter mon solde de congés",
+    "answer": "Pour consulter votre solde de congés, connectez-vous au portail RH. Vous y trouverez vos congés acquis, pris et restants. Si les informations sont incorrectes, créez un ticket RH.",
+    "category": "RH",
+    "keywords": [
+      "solde congés",
+      "reliquat congés",
+      "jours restants",
+      "combien de jours",
+      "droit congé",
+      "crédit congé"
+    ]
+  },
+  {
+    "id": 19,
+    "question": "Comment obtenir une attestation de travail ?",
+    "answer": "Pour obtenir une attestation de travail, créez un ticket dans la catégorie RH. Le service RH vous fournira l'attestation sous 48h ouvrées. Précisez la raison de la demande (banque, visa, logement).",
+    "category": "RH",
+    "keywords": [
+      "attestation",
+      "certificat",
+      "attestation de travail",
+      "justificatif",
+      "document RH",
+      "certificat de travail"
+    ]
+  },
+  {
+    "id": 20,
+    "question": "Problème de salaire / bulletin de paie",
+    "answer": "Si vous constatez une anomalie sur votre salaire ou bulletin de paie, créez un ticket RH avec les détails de l'anomalie. Le service Paie traitera votre réclamation sous 72h ouvrées.",
+    "category": "RH",
+    "keywords": [
+      "salaire",
+      "bulletin de paie",
+      "paie",
+      "salaire erroné",
+      "problème salaire",
+      "paye",
+      "fiche de paie",
+      "rémunération"
+    ]
+  },
+  {
+    "id": 21,
+    "question": "Comment mettre à jour mes informations personnelles ?",
+    "answer": "Pour mettre à jour vos informations personnelles (adresse, téléphone, contact d'urgence), connectez-vous au portail RH. Si vous ne pouvez pas modifier vous-même, créez un ticket RH.",
+    "category": "RH",
+    "keywords": [
+      "mettre à jour",
+      "adresse",
+      "téléphone",
+      "contact urgence",
+      "urgence",
+      "coordonnées",
+      "informations personnelles",
+      "profil"
+    ]
+  },
+  {
+    "id": 22,
+    "question": "Demande de formation professionnelle",
+    "answer": "Pour demander une formation, créez un ticket dans la catégorie Formation avec le nom de la formation, l'organisme et les dates souhaitées. Votre responsable et le service RH valideront la demande.",
+    "category": "Formation",
+    "keywords": [
+      "formation",
+      "cours",
+      "apprentissage",
+      "certification",
+      "stage",
+      "développement",
+      "se former",
+      "formation professionnelle"
+    ]
+  },
+  {
+    "id": 23,
+    "question": "Carte d'accès / badge perdu ou bloqué",
+    "answer": "Si votre badge d'accès est perdu, volé ou ne fonctionne plus, créez un ticket RH. Un nouveau badge vous sera délivré sous 24h. Signalez immédiatement la perte à la sécurité.",
+    "category": "RH",
+    "keywords": [
+      "badge",
+      "carte accès",
+      "badge perdu",
+      "accès bâtiment",
+      "porte",
+      "accès sécurité",
+      "identification"
+    ]
+  },
+  {
+    "id": 24,
+    "question": "Comment faire une demande de télétravail ?",
+    "answer": "Pour demander le télétravail, créez un ticket RH en précisant les jours souhaités et la justification. Votre responsable évaluera la demande selon la politique de télétravail en vigueur.",
+    "category": "RH",
+    "keywords": [
+      "télétravail",
+      "home office",
+      "travailler chez moi",
+      "domicile",
+      "à distance",
+      "remote work"
+    ]
+  },
+  {
+    "id": 25,
+    "question": "Contrat de travail : renouvellement / avenant",
+    "answer": "Pour toute question relative à votre contrat (renouvellement, avenant, fin de période d'essai), créez un ticket RH. Le service RH vous contactera pour les démarches nécessaires.",
+    "category": "RH",
+    "keywords": [
+      "contrat",
+      "renouvellement",
+      "avenant",
+      "période essai",
+      "CDI",
+      "CDD",
+      "fin contrat"
+    ]
+  },
+  {
+    "id": 26,
+    "question": "Certificat médical / arrêt maladie",
+    "answer": "En cas d'arrêt maladie, transmettez votre certificat médical au service RH via un ticket. Vous recevrez confirmation de réception et les informations sur le suivi de votre arrêt.",
+    "category": "RH",
+    "keywords": [
+      "maladie",
+      "arrêt maladie",
+      "certificat médical",
+      "médecin",
+      "congé maladie",
+      "santé"
+    ]
+  },
+  {
+    "id": 27,
+    "question": "Problème de climatisation / chauffage au bureau",
+    "answer": "En cas de problème de climatisation ou chauffage, créez un ticket dans la catégorie Maintenance en précisant le bâtiment, l'étage et le bureau. L'équipe de maintenance interviendra rapidement.",
+    "category": "Maintenance",
+    "keywords": [
+      "climatisation",
+      "clim",
+      "chauffage",
+      "température",
+      "froid",
+      "chaud",
+      "confort thermique"
+    ]
+  },
+  {
+    "id": 28,
+    "question": "Problème électrique dans les locaux",
+    "answer": "Si vous constatez un problème électrique (prise qui ne fonctionne pas, coupure, odeur), créez un ticket Maintenance URGENT. Pour toute urgence électrique, contactez immédiatement la sécurité.",
+    "category": "Maintenance",
+    "keywords": [
+      "électricité",
+      "prise",
+      "coupure courant",
+      "panne électrique",
+      "éclairage",
+      "lumière"
+    ]
+  },
+  {
+    "id": 29,
+    "question": "Nettoyage / hygiène des locaux",
+    "answer": "Pour signaler un problème de propreté ou demander un nettoyage spécifique, créez un ticket dans la catégorie Maintenance. Précisez le lieu exact et la nature du problème.",
+    "category": "Maintenance",
+    "keywords": [
+      "nettoyage",
+      "propreté",
+      "ménage",
+      "hygiène",
+      "désinfection",
+      "poubelle"
+    ]
+  },
+  {
+    "id": 30,
+    "question": "Mobilier de bureau défectueux (chaise, bureau, armoire)",
+    "answer": "Si votre mobilier de bureau est défectueux, créez un ticket Maintenance en décrivant le problème et en précisant la référence du mobilier si disponible. Le remplacement sera organisé sous 72h.",
+    "category": "Maintenance",
+    "keywords": [
+      "chaise",
+      "bureau",
+      "armoire",
+      "mobilier",
+      "meuble",
+      "siège",
+      "table"
+    ]
+  },
+  {
+    "id": 31,
+    "question": "Problème de plomberie / fuite d'eau",
+    "answer": "En cas de fuite d'eau ou problème de plomberie, créez un ticket Maintenance URGENT. Si la fuite est importante, contactez immédiatement la sécurité au poste 1999.",
+    "category": "Maintenance",
+    "keywords": [
+      "plomberie",
+      "fuite",
+      "eau",
+      "évier",
+      "toilette",
+      "robinet",
+      "sanitaire"
+    ]
+  },
+  {
+    "id": 32,
+    "question": "Demande d'accès à un local / salle de réunion",
+    "answer": "Pour demander l'accès à un local ou réserver une salle de réunion, créez un ticket Maintenance. Précisez le local concerné et la période d'accès souhaitée.",
+    "category": "Maintenance",
+    "keywords": [
+      "salle réunion",
+      "local",
+      "accès bâtiment",
+      "réservation",
+      "salle",
+      "espace"
+    ]
+  },
+  {
+    "id": 33,
+    "question": "Comment consulter mes tickets existants ?",
+    "answer": "Connectez-vous à l'application IssueTracker et allez dans la section 'Mes Tickets'. Vous pouvez filtrer par statut (Ouvert, En cours, Résolu) et voir l'historique complet de vos demandes.",
+    "category": "IT",
+    "keywords": [
+      "consulter tickets",
+      "mes tickets",
+      "tickets",
+      "liste tickets",
+      "historique",
+      "mes demandes"
+    ]
+  },
+  {
+    "id": 34,
+    "question": "Que faire en cas d'urgence informatique ?",
+    "answer": "En cas d'urgence informatique (panne critique, impossibilité de travailler), créez un ticket avec le niveau de priorité 'Critique' ou contactez le support IT directement au poste 1234. Un technicien vous rappellera sous 30 minutes.",
+    "category": "IT",
+    "keywords": [
+      "urgence",
+      "urgent",
+      "critique",
+      "panne totale",
+      "hors service",
+      "impossible de travailler",
+      "bloquant",
+      "bloqué",
+      "incident majeur"
+    ]
+  },
+  {
+    "id": 35,
+    "question": "Comment signaler un bug dans l'application ?",
+    "answer": "Pour signaler un bug dans l'application IssueTracker ou tout autre logiciel métier, créez un ticket IT avec une description détaillée du problème et des copies d'écran si possible.",
+    "category": "IT",
+    "keywords": [
+      "bug",
+      "signaler bug",
+      "erreur",
+      "anomalie",
+      "disfonctionnement",
+      "screenshot",
+      "capture écran",
+      "rapport bug"
+    ]
+  },
+  {
+    "id": 36,
+    "question": "Demande de badge visiteur / accès temporaire",
+    "answer": "Pour demander un badge visiteur ou un accès temporaire pour un invité, créez un ticket dans la catégorie Maintenance au moins 48h à l'avance. Précisez le nom du visiteur et les dates de visite.",
+    "category": "Maintenance",
+    "keywords": [
+      "visiteur",
+      "badge visiteur",
+      "accès temporaire",
+      "invité",
+      "invitation",
+      "accès externe"
+    ]
+  },
+  {
+    "id": 37,
+    "question": "Comment suivre une procédure IT ?",
+    "answer": "Consultez la base de connaissances dans l'application IssueTracker. Vous y trouverez des procédures détaillées pour les demandes courantes (VPN, email, installation logicielle).",
+    "category": "IT",
+    "keywords": [
+      "procédure",
+      "guide",
+      "documentation",
+      "manuel",
+      "tutoriel",
+      "base connaissance",
+      "knowledge base",
+      "how to"
+    ]
+  },
+  {
+    "id": 38,
+    "question": "Fournitures de bureau : comment commander ?",
+    "answer": "Pour commander des fournitures de bureau, créez un ticket dans la catégorie Maintenance en listant les articles nécessaires. Les fournitures standards sont livrées sous 48h.",
+    "category": "Maintenance",
+    "keywords": [
+      "fourniture",
+      "stylo",
+      "papier",
+      "agrafeuse",
+      "post-it",
+      "bloc note",
+      "ramette",
+      "bureau"
+    ]
+  },
+  {
+    "id": 39,
+    "question": "Le chatbot ne répond pas correctement",
+    "answer": "Si le chatbot ne répond pas correctement à votre question, vous pouvez demander à parler à un technicien en cliquant sur 'Contacter un technicien'. Votre demande sera transmise au support IT.",
+    "category": "IT",
+    "keywords": [
+      "chatbot",
+      "assistant",
+      "chat bot",
+      "IA",
+      "intelligence artificielle",
+      "bot"
+    ]
+  },
+  {
+    "id": 40,
+    "question": "Comment réinitialiser mon mot de passe Windows ?",
+    "answer": "Pour réinitialiser votre mot de passe Windows, contactez le support IT au poste 1234. Un technicien vous assistera à distance. Ne tentez pas de contourner la sécurité vous-même.",
+    "category": "IT",
+    "keywords": [
+      "mot de passe windows",
+      "Windows",
+      "mdp windows",
+      "session Windows",
+      "compte Windows",
+      "verrouillé"
+    ]
+  },
+  {
+    "id": 41,
     "question": "vpn télétravail accès distant",
     "answer": "Pour obtenir un accès VPN pour le télétravail, créez un ticket IT. Le service informatique vous fournira vos identifiants de connexion sous 24h ouvrées.",
     "category": "IT",
@@ -12,7 +637,7 @@
     ]
   },
   {
-    "id": 2,
+    "id": 42,
     "question": "connexion wifi réseau sans fil",
     "answer": "Pour vous connecter au WiFi Air Algérie, sélectionnez le réseau 'AirAlgerie-WiFi' et utilisez le mot de passe 'AIRALGERIE2024'. Si le problème persiste, contactez l'IT.",
     "category": "IT",
@@ -24,9 +649,9 @@
     ]
   },
   {
-    "id": 3,
+    "id": 43,
     "question": "créer ticket ouvrir demande",
-    "answer": "Pour créer un ticket, cliquez sur 'Nouveau Ticket' dans le menu principal, remplissez le formulaire avec les détails de votre demande et soumettez.",
+    "answer": "Pour créer un ticket, allez dans la page d'un projet, cliquez sur 'Nouveau Ticket' et remplissez le formulaire avec les détails de votre demande.",
     "category": "IT",
     "keywords": [
       "ticket",
@@ -36,7 +661,7 @@
     ]
   },
   {
-    "id": 4,
+    "id": 44,
     "question": "mot de passe oublié réinitialiser",
     "answer": "Pour réinitialiser votre mot de passe, cliquez sur 'Mot de passe oublié' sur la page de connexion. Un email vous sera envoyé avec les instructions.",
     "category": "IT",
@@ -48,7 +673,7 @@
     ]
   },
   {
-    "id": 5,
+    "id": 45,
     "question": "congé demande absence",
     "answer": "Pour faire une demande de congé, soumettez un ticket dans la catégorie RH avec les dates souhaitées. Votre responsable sera notifié pour validation.",
     "category": "RH",
@@ -59,7 +684,7 @@
     ]
   },
   {
-    "id": 6,
+    "id": 46,
     "question": "demande matériel ordinateur écran imprimante",
     "answer": "Pour demander du matériel (ordinateur, écran, imprimante, etc.), créez un ticket dans la catégorie Matériel en précisant l'équipement, le site concerné et l'urgence. Le service Achats traitera votre demande.",
     "category": "Matériel",
@@ -73,7 +698,7 @@
     ]
   },
   {
-    "id": 7,
+    "id": 47,
     "question": "panne connexion email internet réseau",
     "answer": "En cas de panne réseau, email ou connexion internet, créez un ticket IT. Le support technique interviendra dans les plus brefs délais.",
     "category": "IT",
@@ -83,6 +708,58 @@
       "email",
       "internet",
       "réseau"
+    ]
+  },
+  {
+    "id": 48,
+    "question": "consulter mes tickets statut suivi",
+    "answer": "Pour consulter vos tickets, cliquez sur 'Mes Tickets' dans le menu de gauche. Vous y verrez tous vos tickets avec leur statut actuel (Nouveau, En Cours, etc.). Vous pouvez aussi utiliser la barre de recherche pour filtrer par numéro de ticket.",
+    "category": "IT",
+    "keywords": [
+      "consulter",
+      "tickets",
+      "statut",
+      "suivi",
+      "mes tickets",
+      "voir"
+    ]
+  },
+  {
+    "id": 49,
+    "question": "dashboard statistiques tableau de bord",
+    "answer": "Pour accéder au tableau de bord, cliquez sur 'Dashboard' dans le menu principal. Vous trouverez les statistiques globales, les tickets par catégorie, les délais de résolution et les performances des équipes.",
+    "category": "IT",
+    "keywords": [
+      "dashboard",
+      "statistiques",
+      "tableau de bord",
+      "stats"
+    ]
+  },
+  {
+    "id": 50,
+    "question": "vérifier statut ticket progression",
+    "answer": "Pour vérifier le statut d'un ticket, ouvrez le ticket depuis la liste. Le statut actuel est affiché en haut : Nouveau, En Cours, En Attente ou Terminé. Vous pouvez aussi suivre l'historique des commentaires et modifications.",
+    "category": "IT",
+    "keywords": [
+      "vérifier",
+      "statut",
+      "progression",
+      "avancement",
+      "suivi ticket"
+    ]
+  },
+  {
+    "id": 51,
+    "question": "signaler ticket urgent incident critique",
+    "answer": "Pour signaler un ticket urgent, créez un nouveau ticket et sélectionnez la priorité 'Critical' ou 'High'. Décrivez clairement l'impact et l'urgence. Les tickets urgents sont traités en priorité par l'équipe support.",
+    "category": "IT",
+    "keywords": [
+      "signaler",
+      "urgent",
+      "incident critique",
+      "priorité haute",
+      "urgent"
     ]
   }
 ]

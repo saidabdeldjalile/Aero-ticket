@@ -101,4 +101,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
 
     // Find tickets without a project (for admin orientation)
     List<Ticket> findByProjectIsNull();
+
+    // Native delete that relies on DB ON DELETE CASCADE
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = "DELETE FROM ticket WHERE id = :id", nativeQuery = true)
+    void deleteByIdNative(@Param("id") Long id);
 }

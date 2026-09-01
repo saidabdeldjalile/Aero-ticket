@@ -327,46 +327,45 @@ def set_original_keyword_search(func):
 
 def hybrid_faq_search(query: str) -> Tuple[Optional[str], float, Optional[str], str, List[Dict]]:
     """
-    Hybrid FAQ search: keyword first (fast), then semantic if needed.
+    Hybrid FAQ search: semantic search first (more accurate), then keyword fallback.
 
     Returns:
         Tuple of (answer, score, category, source, rag_results)
-        - source: "keyword" | "semantic" | "none"
+        - source: "keyword" | "semantic_direct" | "semantic_rag" | "none"
         - rag_results: list of matched FAQ entries for context
     """
     global _original_keyword_search
 
-    # ── Step 1: Keyword matching (instant) ──
+    # ── Step 1: Semantic search (more accurate with embeddings) ──
+    logger.info(f"🔎 Trying semantic search first")
+    rag_results = semantic_search(query, top_k=RAG_TOP_K)
+
+    if rag_results:
+        # Rerank if enabled
+        if RAG_USE_RERANKER:
+            rag_results = rerank_results(query, rag_results, top_k=RAG_TOP_K)
+
+        best = rag_results[0] if rag_results else None
+        if best:
+            score = best.get("score", 0)
+            logger.info(f"🔎 Semantic match: score={score:.2f}, question={best.get('question', '?')[:40]}")
+
+            if score >= RAG_SIMILARITY_THRESHOLD:
+                # High confidence → direct answer
+                if score >= 0.75:
+                    return best["answer"], score, best["category"], "semantic_direct", rag_results
+
+                # Medium confidence → RAG with Ollama
+                return None, score, best["category"], "semantic_rag", rag_results
+
+    # ── Step 2: Keyword matching fallback (less accurate but covers gaps) ──
     keyword_threshold = float(os.environ.get("FAQ_SIMILARITY_THRESHOLD", "0.75"))
 
     if _original_keyword_search:
         answer, score, category = _original_keyword_search(query)
         if answer and score >= keyword_threshold:
-            logger.info(f"🔍 Keyword match: score={score:.2f}, category={category}")
+            logger.info(f"🔍 Keyword fallback match: score={score:.2f}, category={category}")
             return answer, score, category, "keyword", []
-
-    # ── Step 2: Semantic search (embedding) ──
-    logger.info(f"🔎 No strong keyword match → trying semantic search")
-    rag_results = semantic_search(query, top_k=RAG_TOP_K)
-
-    if rag_results:
-        best = rag_results[0]
-        score = best["score"]
-
-        # Rerank if enabled
-        if RAG_USE_RERANKER:
-            rag_results = rerank_results(query, rag_results, top_k=RAG_TOP_K)
-            best = rag_results[0] if rag_results else best
-
-        logger.info(f"🔎 Semantic match: score={best.get('score', 0):.2f}, category={best.get('category', '?')}")
-
-        if score >= RAG_SIMILARITY_THRESHOLD:
-            # Use the best match answer directly for high confidence
-            if score >= 0.75:
-                return best["answer"], score, best["category"], "semantic_direct", rag_results
-
-            # For medium confidence, pass as RAG context to Ollama
-            return None, score, best["category"], "semantic_rag", rag_results
 
     return None, 0.0, None, "none", []
 

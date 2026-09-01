@@ -126,7 +126,7 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
         const categoriesData = res.data?.content || res.data || [];
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       })
-      .catch((err) => {
+      .catch((_err) => {
         // Fallback: if DTO fails, try plain categories
         api.get("/categories").then((res2: AxiosResponse) => {
           const data = res2.data?.content || res2.data || [];
@@ -308,6 +308,8 @@ export default function CreateTicketBody({ refreshKey }: { refreshKey: number })
         errorMessage = t('createTicket.errors.server', { default: 'Server error occurred. Please try again later or contact support.' });
       } else if (err.response?.status === 400) {
         errorMessage = err.response?.data?.message || t('createTicket.errors.invalid', { default: 'Invalid ticket data. Please check your input.' });
+      } else if (err.response?.status === 409) {
+        errorMessage = t('createTicket.errors.duplicate', { default: 'Un ticket similaire existe déjà dans le système (doublon détecté).' });
       } else if (err.response?.status === 401) {
         errorMessage = t('createTicket.errors.auth', { default: 'Authentication required. Please log in again.' });
       } else if (err.response?.status === 403) {

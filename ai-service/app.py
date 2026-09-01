@@ -124,20 +124,20 @@ def get_db_connection():
 
 
 def load_faq() -> List[Dict]:
-    """Load FAQ data from database, fallback to static list."""
+    """Load FAQ data from database, then merge with static fallback FAQ."""
+
+    db_faqs = []
+
     conn = get_db_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            # Load FAQ with keywords from the many-to-many faq_keywords table
             cursor.execute(
                 "SELECT id, question, answer, category FROM faq WHERE active = true"
             )
             rows = cursor.fetchall()
-            faqs = []
             for r in rows:
                 faq_id = r[0]
-                # Load keywords for this FAQ
                 try:
                     cursor.execute(
                         "SELECT keywords FROM faq_keywords WHERE faq_id = %s",
@@ -146,7 +146,7 @@ def load_faq() -> List[Dict]:
                     keywords = [k[0] for k in cursor.fetchall() if k[0]]
                 except Exception:
                     keywords = []
-                faqs.append({
+                db_faqs.append({
                     "id": faq_id,
                     "question": r[1],
                     "answer": r[2],
@@ -155,15 +155,67 @@ def load_faq() -> List[Dict]:
                 })
             cursor.close()
             conn.close()
-            if faqs:
-                logger.info(f"✅ FAQ loaded from DB: {len(faqs)} entries with keywords")
-                return faqs
         except Exception as e:
             logger.warning(f"Could not load FAQ from DB: {e}")
 
-    # Static fallback FAQ
-    logger.info("📋 Using fallback FAQ")
-    return [
+    # Static fallback FAQ (merged with DB, deduplication via normalized question similarity)
+    logger.info(f"📋 DB FAQ: {len(db_faqs)} entries, merging with static FAQ")
+
+    # Start with DB FAQ or empty if DB failed
+    faqs = list(db_faqs)
+
+    # Build a normalized keyword signature for each DB FAQ for similarity detection
+    import re as _re
+    def _normalize(text: str) -> str:
+        """Remove accents, lowercase, remove punctuation, normalize spaces."""
+        t = text.lower()
+        t = t.replace("é","e").replace("è","e").replace("ê","e").replace("ë","e")
+        t = t.replace("à","a").replace("â","a").replace("ä","a")
+        t = t.replace("ù","u").replace("û","u").replace("ü","u")
+        t = t.replace("î","i").replace("ï","i")
+        t = t.replace("ô","o").replace("ö","o")
+        t = t.replace("ç","c")
+        t = _re.sub(r'[?.,!;\'\"]', '', t)
+        t = _re.sub(r'\s+', ' ', t).strip()
+        return t
+
+    def _question_similar(a: str, b: str) -> float:
+        """Compute overlap score between two normalized questions."""
+        a_norm = _normalize(a)
+        b_norm = _normalize(b)
+        # Exact match after normalization
+        if a_norm == b_norm:
+            return 1.0
+        # Word overlap
+        a_words = set(a_norm.split())
+        b_words = set(b_norm.split())
+        if not a_words or not b_words:
+            return 0.0
+        intersection = a_words & b_words
+        union = a_words | b_words
+        return len(intersection) / len(union)
+
+    SIMILARITY_THRESHOLD = float(os.environ.get("FAQ_DEDUP_THRESHOLD", "0.65"))
+
+    def _is_duplicate(question: str) -> bool:
+        """Check if a question is already covered by existing FAQs (case-insensitive exact match or similarity)."""
+        norm_q = _normalize(question)
+        for existing in faqs:
+            existing_q = existing.get("question", "")
+            existing_norm = _normalize(existing_q)
+            if norm_q == existing_norm:
+                logger.debug(f"  ↳ Skipping '{question[:40]}' — exact duplicate (case-insensitive) of '{existing_q[:40]}'")
+                return True
+            similarity = _question_similar(norm_q, existing_norm)
+            if similarity >= SIMILARITY_THRESHOLD:
+                logger.debug(f"  ↳ Skipping '{question[:40]}' — similar to existing '{existing_q[:40]}' (score={similarity:.2f})")
+                return True
+        return False
+
+    # Use next available ID after DB entries
+    next_id = max((f["id"] for f in db_faqs), default=0) + 1
+
+    static_faqs = [
         {
             "id": 1,
             "question": "vpn télétravail accès distant",
@@ -188,8 +240,8 @@ def load_faq() -> List[Dict]:
             "id": 3,
             "question": "créer ticket ouvrir demande",
             "answer": (
-                "Pour créer un ticket, cliquez sur 'Nouveau Ticket' dans le menu principal, "
-                "remplissez le formulaire avec les détails de votre demande et soumettez."
+                "Pour créer un ticket, allez dans la page d'un projet, "
+                "cliquez sur 'Nouveau Ticket' et remplissez le formulaire avec les détails de votre demande."
             ),
             "category": "IT",
             "keywords": ["ticket", "demande", "créer", "ouvrir"],
@@ -235,7 +287,61 @@ def load_faq() -> List[Dict]:
             "category": "IT",
             "keywords": ["panne", "connexion", "email", "internet", "réseau"],
         },
+        {
+            "id": 8,
+            "question": "consulter mes tickets statut suivi",
+            "answer": (
+                "Pour consulter vos tickets, cliquez sur 'Mes Tickets' dans le menu de gauche. "
+                "Vous y verrez tous vos tickets avec leur statut actuel (Nouveau, En Cours, etc.). "
+                "Vous pouvez aussi utiliser la barre de recherche pour filtrer par numéro de ticket."
+            ),
+            "category": "IT",
+            "keywords": ["consulter", "tickets", "statut", "suivi", "mes tickets", "voir"],
+        },
+        {
+            "id": 9,
+            "question": "dashboard statistiques tableau de bord",
+            "answer": (
+                "Pour accéder au tableau de bord, cliquez sur 'Dashboard' dans le menu principal. "
+                "Vous trouverez les statistiques globales, les tickets par catégorie, "
+                "les délais de résolution et les performances des équipes."
+            ),
+            "category": "IT",
+            "keywords": ["dashboard", "statistiques", "tableau de bord", "stats"],
+        },
+        {
+            "id": 10,
+            "question": "vérifier statut ticket progression",
+            "answer": (
+                "Pour vérifier le statut d'un ticket, ouvrez le ticket depuis la liste. "
+                "Le statut actuel est affiché en haut : Nouveau, En Cours, En Attente ou Terminé. "
+                "Vous pouvez aussi suivre l'historique des commentaires et modifications."
+            ),
+            "category": "IT",
+            "keywords": ["vérifier", "statut", "progression", "avancement", "suivi ticket"],
+        },
+        {
+            "id": 11,
+            "question": "signaler ticket urgent incident critique",
+            "answer": (
+                "Pour signaler un ticket urgent, créez un nouveau ticket et sélectionnez "
+                "la priorité 'Critical' ou 'High'. Décrivez clairement l'impact et l'urgence. "
+                "Les tickets urgents sont traités en priorité par l'équipe support."
+            ),
+            "category": "IT",
+            "keywords": ["signaler", "urgent", "incident critique", "priorité haute", "urgent"],
+        },
     ]
+
+    # Merge static FAQ entries that are not already covered (similarity-based dedup)
+    for static_faq in static_faqs:
+        if not _is_duplicate(static_faq["question"]):
+            static_faq["id"] = next_id
+            next_id += 1
+            faqs.append(static_faq)
+
+    logger.info(f"✅ FAQ ready: {len(faqs)} total entries ({len(db_faqs)} from DB + {len(faqs) - len(db_faqs)} static)")
+    return faqs
 
 
 def search_faq(query: str) -> Tuple[str | None, float, str | None]:
@@ -427,9 +533,6 @@ def create_ticket_in_backend(ticket_data: Dict, auth_token: str = None) -> Dict:
             headers["Authorization"] = f"Bearer {auth_token}"
             logger.debug(f"Sending ticket creation request with token: {auth_token[:30]}...")
 
-        # Get default project ID from environment or use 1
-        default_project_id = int(os.environ.get("DEFAULT_PROJECT_ID", "1"))
-
         priority = ticket_data.get("priority") or "Medium"
         if priority not in {"High", "Medium", "Low", "Critical"}:
             priority = "Medium"
@@ -439,9 +542,9 @@ def create_ticket_in_backend(ticket_data: Dict, auth_token: str = None) -> Dict:
             "description": ticket_data.get("description", ""),
             "category":    ticket_data.get("category",    "Autres"),
             "priority":    priority,
-            "status":      "Open",
+            "status":      "Nouveau",
             "reporter":    ticket_data.get("userEmail",   "unknown@airalgerie.dz"),
-            "project":     default_project_id,
+            "project":     None,  # No project assigned by default
             # Optional fields left null/empty
             "assignee":    None,
             "issueType":   None,
@@ -483,6 +586,7 @@ class ConversationManager:
                 "last_answer":              "",
                 "waiting_for_description":  False,
                 "waiting_for_confirmation": False,
+                "waiting_for_ticket_field": None,
                 "pending_ticket":           None,
                 "auth_token":               None,
             }
@@ -504,18 +608,29 @@ class ConversationManager:
         s = self.get_session(session_id)
         s["waiting_for_description"] = True
         s["waiting_for_confirmation"] = False
+        s["waiting_for_ticket_field"] = None
         s["pending_ticket"]          = info
 
     def set_waiting_for_confirmation(self, session_id: str, info: dict):
         s = self.get_session(session_id)
         s["waiting_for_description"] = False
         s["waiting_for_confirmation"] = True
+        s["waiting_for_ticket_field"] = None
         s["pending_ticket"] = info
+
+    def set_waiting_for_ticket_field(self, session_id: str, field: str, info: dict):
+        """Multi-step ticket creation: wait for a specific field (title, description, category, priority)."""
+        s = self.get_session(session_id)
+        s["waiting_for_description"] = False
+        s["waiting_for_confirmation"] = False
+        s["waiting_for_ticket_field"] = field
+        s["pending_ticket"]          = info
 
     def clear_waiting(self, session_id: str):
         s = self.get_session(session_id)
         s["waiting_for_description"] = False
         s["waiting_for_confirmation"] = False
+        s["waiting_for_ticket_field"] = None
         s["pending_ticket"]          = None
 
     def is_waiting(self, session_id: str) -> bool:
@@ -523,6 +638,12 @@ class ConversationManager:
 
     def is_waiting_confirmation(self, session_id: str) -> bool:
         return self.get_session(session_id).get("waiting_for_confirmation", False)
+
+    def is_waiting_ticket_field(self, session_id: str) -> bool:
+        return self.get_session(session_id).get("waiting_for_ticket_field") is not None
+
+    def get_waiting_ticket_field(self, session_id: str) -> str | None:
+        return self.get_session(session_id).get("waiting_for_ticket_field")
 
     def get_pending(self, session_id: str) -> dict:
         return self.get_session(session_id).get("pending_ticket") or {}
@@ -535,24 +656,61 @@ conversation_manager = ConversationManager()
 def save_unanswered_question(question: str, category: str, user_email: str, session_id: str):
     """Save questions that Ollama answered (no FAQ match) so admins can review & add to FAQ."""
     try:
+        # Normalize categories/department to match what the backend UI expects.
+        category_map = {
+            "IT": "informatique",
+            "RH": "administratif",
+            "Matériel": "materiel",
+            "Maintenance": "maintenance",
+            "Formation": "formation",
+            "Autres": "autres",
+            "autres": "autres",
+        }
+        normalized_category = category_map.get(category, category)
+
+        # We can't rely on classify_demand(question) output to match UI labels,
+        # so we normalize again.
+        raw_department = classify_demand(question)
+        department_map = {
+            "IT": "informatique",
+            "RH": "administratif",
+            "Matériel": "materiel",
+            "Maintenance": "maintenance",
+            "Formation": "formation",
+            "Autres": "autres",
+            "autres": "autres",
+        }
+        normalized_department = department_map.get(raw_department, raw_department)
+
         payload = {
             "question": question[:500],
-            "context": f"Posée via chatbot (session: {session_id[:8]}, catégorie: {category})",
+            "context": f"Posée via chatbot (session: {session_id[:8]}, catégorie: {normalized_category})",
             "userEmail": user_email or "chatbot@system",
-            "suggestedCategory": category,
-            "suggestedDepartment": classify_demand(question),
+            "suggestedCategory": normalized_category,
+            "suggestedDepartment": normalized_department,
         }
+
         response = requests.post(
             f"{BACKEND_API_V1}/unanswered-questions",
             json=payload,
             timeout=10,
         )
         if response.status_code in [200, 201]:
-            logger.info(f"📝 Unanswered question saved: '{question[:50]}...' (cat: {category})")
+            logger.info(
+                "📝 Unanswered question saved: '%s...' (cat=%s, dep=%s, status=%s)",
+                question[:50],
+                normalized_category,
+                normalized_department,
+                response.status_code,
+            )
         else:
-            logger.debug(f"Unanswered question save returned HTTP {response.status_code}")
+            logger.warning(
+                "⚠️ Unanswered question save returned HTTP %s: %s",
+                response.status_code,
+                (response.text or "")[:200],
+            )
     except requests.exceptions.ConnectionError:
-        logger.debug(f"Backend unreachable — couldn't save unanswered question")
+        logger.debug("Backend unreachable — couldn't save unanswered question")
     except Exception as e:
         logger.debug(f"Could not save unanswered question: {e}")
 
@@ -563,6 +721,9 @@ AUTO_TICKET_TRIGGERS = [
     "je veux un ticket", "besoin d'un ticket", "j'ai besoin d'un ticket",
     "signaler un problème", "signaler", "reporter un bug", "bug", "erreur",
     "déclarer un incident", "incident", "panne", "problème urgent",
+    "créer un nouveau ticket", "nouveau ticket", "créer ticket",
+    "comment créer un ticket", "comment créer un nouveau ticket",
+    "comment ouvrir un ticket", "comment signaler",
 ]
 
 def should_auto_create_ticket(message: str) -> Tuple[bool, str]:
@@ -663,7 +824,139 @@ def chat():
             conversation_manager.add_message(session_id, "assistant", response_msg)
             return jsonify({"sessionId": session_id, "response": response_msg, "conversationEnded": True})
 
-        # ── STEP 1 : waiting for problem description → create ticket ──
+        # ── STEP 1 : collecting ticket fields step by step (title → description → category → priority → auto-create) ──
+        if conversation_manager.is_waiting_ticket_field(session_id):
+            pending = conversation_manager.get_pending(session_id)
+            current_field = conversation_manager.get_waiting_ticket_field(session_id)
+            logger.info(f"📝 Collecting ticket field: {current_field}")
+
+            # Require authentication
+            if not auth_token:
+                response_msg = (
+                    "🔐 **Connexion requise**\n\n"
+                    "Pour créer un ticket, connectez-vous d'abord via le menu latéral."
+                )
+                conversation_manager.add_message(session_id, "assistant", response_msg)
+                return jsonify({"sessionId": session_id, "response": response_msg, "conversationEnded": True})
+
+            # Determine next field based on current field being collected
+            FIELD_FLOW = ["title", "description", "category", "priority"]
+            current_idx = FIELD_FLOW.index(current_field) if current_field in FIELD_FLOW else -1
+
+            # Store the answer for the current field
+            if current_field == "title":
+                pending["title"] = message
+            elif current_field == "description":
+                pending["description"] = message
+            elif current_field == "category":
+                # Try to match user input to a known category
+                msg_lower = message.lower()
+                category_map = {
+                    "it": "IT", "informatique": "IT", "technique": "IT",
+                    "rh": "RH", "ressources humaines": "RH", "congé": "RH", "salaire": "RH",
+                    "matériel": "Matériel", "equipement": "Matériel",
+                    "maintenance": "Maintenance", "bâtiment": "Maintenance",
+                    "formation": "Formation",
+                }
+                matched_category = None
+                for key, val in category_map.items():
+                    if key in msg_lower:
+                        matched_category = val
+                        break
+                pending["category"] = matched_category or classify_demand(message)
+            elif current_field == "priority":
+                priority_map = {
+                    "critique": "Critical", "urgent": "High", "haute": "High",
+                    "moyenne": "Medium", "moyen": "Medium", "normal": "Medium",
+                    "basse": "Low", "faible": "Low",
+                }
+                msg_lower = message.lower()
+                matched_priority = None
+                for key, val in priority_map.items():
+                    if key in msg_lower:
+                        matched_priority = val
+                        break
+                pending["priority"] = matched_priority or classify_priority(message)
+
+            # Move to next field or create ticket
+            next_idx = current_idx + 1
+
+            if next_idx < len(FIELD_FLOW):
+                # Ask for the next field
+                next_field = FIELD_FLOW[next_idx]
+                field_labels = {
+                    "title": "**Titre** du ticket",
+                    "description": "**Description** du problème",
+                    "category": "**Catégorie** (IT, RH, Matériel, Maintenance, Formation, Autres)",
+                    "priority": "**Priorité** (Critique, Haute, Moyenne, Basse)",
+                }
+                response_msg = (
+                    f"📝 **Création de ticket - Étape {next_idx + 1}/{len(FIELD_FLOW)}**\n\n"
+                    f"Veuillez saisir {field_labels.get(next_field, next_field)} :"
+                )
+                conversation_manager.set_waiting_for_ticket_field(session_id, next_field, pending)
+                conversation_manager.add_message(session_id, "assistant", response_msg)
+                return jsonify({
+                    "sessionId":  session_id,
+                    "response":   response_msg,
+                    "waitingFor": f"ticket_field_{next_field}",
+                    "ticketForm": {
+                        "step": next_idx + 1,
+                        "totalSteps": len(FIELD_FLOW),
+                        "field": next_field,
+                        "draft": {
+                            "title": pending.get("title", ""),
+                            "description": pending.get("description", ""),
+                            "category": pending.get("category", ""),
+                            "priority": pending.get("priority", ""),
+                        }
+                    }
+                })
+
+            # All fields collected → auto-create ticket
+            category = pending.get("category") or "Autres"
+            priority = pending.get("priority") or "Medium"
+            title = pending.get("title") or "Demande Chatbot"
+            description = pending.get("description") or ""
+
+            result = create_ticket_in_backend(
+                {
+                    "title": title[:200],
+                    "description": description,
+                    "category": category,
+                    "priority": priority,
+                    "userEmail": user_email,
+                },
+                auth_token,
+            )
+
+            conversation_manager.clear_waiting(session_id)
+
+            if result.get("success"):
+                ticket_id = result.get("ticketId")
+                response_msg = (
+                    f"✅ **Ticket #{ticket_id} créé avec succès !**\n\n"
+                    f"📌 **{title}**\n"
+                    f"📂 Catégorie : **{category}** | 🔥 Priorité : **{priority}**"
+                )
+                conversation_manager.add_message(session_id, "assistant", response_msg)
+                return jsonify({
+                    "sessionId": session_id,
+                    "response": response_msg,
+                    "ticketCreated": True,
+                    "ticketId": ticket_id,
+                    "ticketUrl": f"/tickets/{ticket_id}",
+                    "category": category,
+                    "priority": priority,
+                    "title": title,
+                    "conversationEnded": True,
+                })
+
+            response_msg = f"❌ Erreur lors de la création du ticket : {result.get('error')}"
+            conversation_manager.add_message(session_id, "assistant", response_msg)
+            return jsonify({"sessionId": session_id, "response": response_msg, "conversationEnded": True})
+
+        # ── STEP 1b : waiting for problem description → create ticket (old flow, kept for feedback negative) ──
         if conversation_manager.is_waiting(session_id):
             logger.info("📝 Creating ticket with description...")
             pending  = conversation_manager.get_pending(session_id)
@@ -763,9 +1056,32 @@ def chat():
 
             # Non → cancel
             conversation_manager.clear_waiting(session_id)
-            response_msg = "D'accord — je n'ai pas créé de ticket. Souhaitez-vous que je vous aide autrement ?"
+
+            # Enregistrer une requête en attente (amélioration FAQ / suivi admin)
+            # afin que l'utilisateur ne reste pas bloqué et que la demande soit tracée.
+            try:
+                last_q = session.get("last_question", "")
+                last_a = session.get("last_answer", "")
+                category = classify_demand(f"{last_q} {last_a}".strip())
+
+                # Store the user question as "unanswered" for admin review
+                unanswered_q = (last_q or message or "").strip()[:500]
+                if unanswered_q:
+                    save_unanswered_question(
+                        unanswered_q,
+                        category,
+                        user_email or "chatbot@system",
+                        session_id,
+                    )
+            except Exception:
+                pass
+
+            response_msg = (
+                "D'accord — je note que ma réponse ne vous a pas aidé.\n"
+                "Je peux enregistrer votre demande pour amélioration, et vous aider autrement si vous le souhaitez."
+            )
             conversation_manager.add_message(session_id, "assistant", response_msg)
-            return jsonify({"sessionId": session_id, "response": response_msg, "conversationEnded": True})
+            return jsonify({"sessionId": session_id, "response": response_msg, "conversationEnded": False})
 
         # ── STEP 2 : handle feedback (oui / non) ──
         if is_feedback_response(message) and session.get("last_answer"):
@@ -787,6 +1103,9 @@ def chat():
                     "feedback": message,
                     "category": category,
                 })
+                last_q = session.get("last_question", "")
+                if last_q:
+                    save_unanswered_question(last_q, category, user_email or "chatbot@system", session_id)
                 response_msg = (
                     f"Je suis désolé que ma réponse ne vous ait pas satisfait. 📝\n\n"
                     f"**Décrivez votre problème en détail** pour que je crée un ticket :\n\n"
@@ -799,11 +1118,9 @@ def chat():
                     "waitingFor":              "ticket_description",
                 })
 
-        # ── STEP 3 : auto-ticket trigger ──
+        # ── STEP 3 : auto-ticket trigger (multi-step form) ──
         should_auto, trigger = should_auto_create_ticket(message)
         if should_auto:
-            category = classify_demand(message)
-
             # Require authentication
             if not auth_token:
                 response_msg = (
@@ -813,21 +1130,37 @@ def chat():
                 conversation_manager.add_message(session_id, "assistant", response_msg)
                 return jsonify({"sessionId": session_id, "response": response_msg, "conversationEnded": True})
 
-            conversation_manager.set_waiting_for_description(session_id, {
+            # Start multi-step form: first ask for title
+            detected_category = classify_demand(message)
+            pending = {
                 "question": message,
                 "answer":   "",
                 "feedback": "auto_trigger",
-                "category": category,
-            })
+                "category": detected_category,
+                "title":    "",
+                "description": "",
+            }
+            conversation_manager.set_waiting_for_ticket_field(session_id, "title", pending)
             response_msg = (
-                f"📝 **Demande de ticket détectée** (catégorie : **{category}**)\n\n"
-                f"Décrivez votre problème en détail pour que je crée le ticket automatiquement :"
+                f"📝 **Création de ticket - Étape 1/4**\n\n"
+                f"Veuillez saisir le **Titre** du ticket :"
             )
             conversation_manager.add_message(session_id, "assistant", response_msg)
             return jsonify({
-                "sessionId":         session_id,
-                "response":          response_msg,
-                "waitingFor":        "ticket_description",
+                "sessionId":  session_id,
+                "response":   response_msg,
+                "waitingFor": "ticket_field_title",
+                "ticketForm": {
+                    "step": 1,
+                    "totalSteps": 4,
+                    "field": "title",
+                    "draft": {
+                        "title": "",
+                        "description": "",
+                        "category": detected_category,
+                        "priority": "",
+                    }
+                }
             })
 
         # ── STEP 4 : normal conversation with RAG ──
@@ -884,14 +1217,14 @@ def chat():
         logger.info("❓ No FAQ match → using Ollama directly")
         ollama_result = call_ollama(message)
 
-        # Save question as "unanswered" for admin review (only if no FAQ match at all)
         category = classify_demand(message)
-        save_unanswered_question(message, category, user_email, session_id)
 
         if ollama_result["success"]:
             answer = ollama_result["response"]
             source = "llm"
         else:
+            # Save question as "unanswered" for admin review only when Ollama fails
+            save_unanswered_question(message, category, user_email, session_id)
             answer = _ollama_fallback_message(ollama_result, message)
             source = "fallback"
 

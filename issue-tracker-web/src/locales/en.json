@@ -86,7 +86,8 @@
       "forbidden": "Access denied. You don't have permission to create tickets.",
       "notFound": "Server not found. Please check if the backend is running.",
       "unavailable": "Service temporarily unavailable. Please try again later.",
-      "network": "Network error. Please check your internet connection."
+      "network": "Network error. Please check your internet connection.",
+      "duplicate": "A similar ticket already exists in the system (duplicate detected)."
     }
   },
   "ticket": {
@@ -240,7 +241,15 @@
     "serverError": "Server error",
     "tryAgain": "Please try again",
     "duplicate": "Already exists",
-    "network": "Network error"
+    "network": "Network error",
+    "dateFilterOrder": "Start date must be less than or equal to end date",
+    "invalidDate": "Invalid date format",
+    "duplicateCategory": "A category with this name already exists. Please choose a different name.",
+    "duplicateIssueType": "An issue type with this name already exists. Please choose a different name.",
+    "duplicateProject": "A project with this name already exists. Please choose a different name.",
+    "duplicateDepartment": "A department with this name already exists. Please choose a different name.",
+    "duplicateDetected": "⚠️ Duplicate detected",
+    "saveFailed": "Error saving"
   },
   "language": {
     "select": "Language",
@@ -267,7 +276,10 @@
     "editProject": "Edit Project",
     "deleteProject": "Delete Project",
     "name": "Project Name",
-    "description": "Project Description"
+    "description": "Project Description",
+    "createSuccess": "Project created successfully",
+    "updateSuccess": "Project updated successfully",
+    "deleteSuccess": "Project deleted successfully"
   },
   "department": {
     "departments": "Departments",
@@ -283,7 +295,8 @@
     "descriptionPlaceholder": "Description",
     "deleteConfirm": "Are you sure you want to delete this department?",
     "deleteSuccess": "Department deleted successfully",
-    "createSuccess": "Department created successfully"
+    "createSuccess": "Department created successfully",
+    "updateSuccess": "Department updated successfully"
   },
   "message": {
     "success": "Success",

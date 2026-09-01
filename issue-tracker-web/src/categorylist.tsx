@@ -136,7 +136,7 @@ export default function CategoryList() {
     const handleCategorySubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!catForm.name.trim()) {
-            toast.error("Le nom de la catégorie est requis");
+            toast.error(t('common.errors.required') || "Le nom de la catégorie est requis");
             return;
         }
         setSavingCategory(true);
@@ -144,15 +144,20 @@ export default function CategoryList() {
             const payload = { ...catForm, name: catForm.name.trim() };
             if (editingCategory) {
                 await api.put(`/categories/${editingCategory.id}`, payload);
-                toast.success("Catégorie mise à jour");
+                toast.success(t('common.updateSuccess') || "Catégorie mise à jour");
             } else {
                 await api.post("/categories", payload);
-                toast.success("Catégorie créée");
+                toast.success(t('common.createSuccess') || "Catégorie créée");
             }
             closeCategoryModal();
             fetchCategories();
         } catch (err: any) {
-            toast.error(err?.response?.status === 400 ? "Cette catégorie existe déjà" : "Erreur lors de l'enregistrement");
+            const status = err?.response?.status;
+            if (status === 409 || status === 400) {
+                toast.error(t('errors.duplicateCategory'));
+            } else {
+                toast.error(t('errors.saveFailed'));
+            }
         } finally {
             setSavingCategory(false);
         }
@@ -240,7 +245,7 @@ export default function CategoryList() {
     const handleTypeSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!typeForm.name.trim()) {
-            toast.error("Le nom est requis");
+            toast.error(t('common.errors.required') || "Le nom est requis");
             return;
         }
         setSavingType(true);
@@ -248,15 +253,20 @@ export default function CategoryList() {
             const payload = { ...typeForm, name: typeForm.name.trim() };
             if (editingType) {
                 await api.put(`/issue-types/${editingType.id}`, payload);
-                toast.success("Type de demande mis à jour");
+                toast.success(t('common.updateSuccess') || "Type de demande mis à jour");
             } else {
                 await api.post("/issue-types", payload);
-                toast.success("Type de demande créé");
+                toast.success(t('common.createSuccess') || "Type de demande créé");
             }
             closeTypeModal();
             fetchIssueTypes();
         } catch (err: any) {
-            toast.error(err?.response?.status === 400 ? "Ce type existe déjà" : "Erreur");
+            const status = err?.response?.status;
+            if (status === 409 || status === 400) {
+                toast.error(t('errors.duplicateIssueType'));
+            } else {
+                toast.error(t('errors.saveFailed'));
+            }
         } finally { setSavingType(false); }
     };
 
@@ -366,7 +376,6 @@ export default function CategoryList() {
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Tag className="w-4 h-4 text-red-500" />
-                                                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">{cat.label || cat.name}</h3>
                                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg">{cat.name}</h3>
                                                 </div>
                                             </div>
@@ -462,8 +471,8 @@ export default function CategoryList() {
                                                     const isSelected = catForm.allowedIssueTypes.includes(type.name);
                                                     return (
                                                         <label
-                                                            key={type}
-                                                            onClick={() => toggleIssueType(type)}
+                                                            key={type.id}
+                                                            onClick={() => toggleIssueType(type.name)}
                                                             className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer border-b border-gray-100 dark:border-gray-800 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all text-sm ${isSelected ? "bg-blue-50 dark:bg-blue-500/5 text-blue-700 dark:text-blue-400 font-medium" : "text-gray-700 dark:text-gray-300"
                                                                 }`}
                                                         >

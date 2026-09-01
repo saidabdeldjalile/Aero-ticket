@@ -132,6 +132,7 @@ public class TicketController {
                 startDateTime = parseIsoDateTime(startDate);
             } catch (Exception e) {
                 log.warn("Failed to parse startDate: {}. Error: {}", startDate, e.getMessage());
+                throw new IllegalArgumentException("Format de date de début invalide (ISO-8601 attendu, ex: yyyy-MM-dd'T'HH:mm:ss)");
             }
         }
         
@@ -140,7 +141,12 @@ public class TicketController {
                 endDateTime = parseIsoDateTime(endDate);
             } catch (Exception e) {
                 log.warn("Failed to parse endDate: {}. Error: {}", endDate, e.getMessage());
+                throw new IllegalArgumentException("Format de date de fin invalide (ISO-8601 attendu, ex: yyyy-MM-dd'T'HH:mm:ss)");
             }
+        }
+
+        if (startDateTime != null && endDateTime != null && startDateTime.isAfter(endDateTime)) {
+            throw new IllegalArgumentException("La date de début doit être inférieure ou égale à la date de fin");
         }
         
         log.info("Advanced search called with: search={}, status={}, priority={}, startDate={}, endDate={}, departmentId={}, projectId={}, category={}",
@@ -180,7 +186,7 @@ public class TicketController {
     // ==================== BULK ACTIONS ====================
 
     /**
-     * Bulk delete tickets (soft delete - sets status to DELETED)
+     * Bulk delete tickets (permanent deletion from database)
      */
     @PostMapping("/bulk/delete")
     public ResponseEntity<Void> bulkDeleteTickets(@Valid @RequestBody BulkActionRequest request) {

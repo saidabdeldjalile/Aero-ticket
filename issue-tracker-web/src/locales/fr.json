@@ -86,7 +86,8 @@
       "forbidden": "Accès refusé. Vous n'avez pas la permission de créer des tickets.",
       "notFound": "Serveur introuvable. Vérifiez que le backend est en cours d'exécution.",
       "unavailable": "Service temporairement indisponible. Veuillez réessayer plus tard.",
-      "network": "Erreur réseau. Vérifiez votre connexion Internet."
+      "network": "Erreur réseau. Vérifiez votre connexion Internet.",
+      "duplicate": "Un ticket similaire existe déjà dans le système (doublon détecté)."
     }
   },
   "ticket": {
@@ -234,7 +235,15 @@
     "serverError": "Erreur du serveur",
     "tryAgain": "Veuillez réessayer",
     "duplicate": "Déjà existant",
-    "network": "Erreur réseau"
+    "network": "Erreur réseau",
+    "dateFilterOrder": "La date de début doit être inférieure ou égale à la date de fin",
+    "invalidDate": "Format de date de filtre invalide",
+    "duplicateCategory": "Une catégorie avec ce nom existe déjà. Veuillez choisir un nom différent.",
+    "duplicateIssueType": "Un type de demande avec ce nom existe déjà. Veuillez choisir un nom différent.",
+    "duplicateProject": "Un projet avec ce nom existe déjà. Veuillez choisir un nom différent.",
+    "duplicateDepartment": "Un département avec ce nom existe déjà. Veuillez choisir un nom différent.",
+    "duplicateDetected": "⚠️ Doublon détecté",
+    "saveFailed": "Erreur lors de l'enregistrement"
   },
   "language": {
     "select": "Langue",
@@ -261,7 +270,10 @@
     "editProject": "Modifier le projet",
     "deleteProject": "Supprimer le projet",
     "name": "Nom du projet",
-    "description": "Description du projet"
+    "description": "Description du projet",
+    "createSuccess": "Projet créé avec succès",
+    "updateSuccess": "Projet mis à jour avec succès",
+    "deleteSuccess": "Projet supprimé avec succès"
   },
   "department": {
     "departments": "Départements",
@@ -543,7 +555,10 @@
     "create": "Créer un service",
     "edit": "Modifier le service",
     "delete": "Supprimer le service",
-    "noDepartments": "Aucun service trouvé"
+    "noDepartments": "Aucun service trouvé",
+    "createSuccess": "Département créé avec succès",
+    "updateSuccess": "Département mis à jour avec succès",
+    "deleteSuccess": "Département supprimé avec succès"
   },
   "notification": {
     "title": "Notifications",

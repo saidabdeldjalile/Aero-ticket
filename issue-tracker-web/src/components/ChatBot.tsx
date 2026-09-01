@@ -67,6 +67,18 @@ interface Entities {
   ticket_ids?: string[];
 }
 
+interface TicketForm {
+  step: number;
+  totalSteps: number;
+  field: string;
+  draft: {
+    title: string;
+    description: string;
+    category: string;
+    priority: string;
+  };
+}
+
 interface ChatApiResponse {
   response: string;
   sessionId?: string;
@@ -78,6 +90,7 @@ interface ChatApiResponse {
   sentiment?: SentimentInfo;
   entities?: Entities;
   waitingFor?: string;
+  ticketForm?: TicketForm;
   ticketDraft?: TicketDraft;
   needsTicketCreation?: boolean;
   suggestedCategory?: string;
@@ -188,23 +201,15 @@ export default function ChatBot({ onClose }: ChatBotProps) {
     setInputText("");
     setIsLoading(true);
 
-    /* 
-    if (isWsConnected) {
-      sendWs('/app/chat', {
-        message: clean,
-        userEmail: auth?.email || "user@airalgerie.dz",
-        sessionId,
-      });
-      setIsLoading(false);
-      return;
-    }
-    */
-
     try {
+      // Get auth token from auth context or localStorage
+      const token = auth?.accessToken || auth?.token || localStorage.getItem("accessToken") || "";
+
       const response = await aiService.post<ChatApiResponse>("/chat", {
         message: clean,
         userEmail: auth?.email || "user@airalgerie.dz",
         sessionId,
+        authToken: token,
       });
 
       const data = response.data;
@@ -214,7 +219,11 @@ export default function ChatBot({ onClose }: ChatBotProps) {
 
       let draft: TicketDraft | undefined;
 
-      if (data.ticketDraft && data.createTicket) {
+      // Handle ticket form progress (multi-step form)
+      if (data.ticketForm && data.waitingFor?.startsWith("ticket_field_")) {
+        // Don't show action button during form fill, just display the text
+        draft = undefined;
+      } else if (data.ticketDraft && data.createTicket) {
         draft = {
           title: data.ticketDraft.title || clean.slice(0, 100),
           description: data.ticketDraft.description || clean,
@@ -423,6 +432,7 @@ export default function ChatBot({ onClose }: ChatBotProps) {
   };
 
   const quickActions = [
+    { label: t('chatbot.quickActions.createTicket'), prompt: "Je veux créer un ticket" },
     { label: t('chatbot.quickActions.password'), prompt: "J'ai oublié mon mot de passe, comment le réinitialiser?" },
     { label: t('chatbot.quickActions.wifi'), prompt: "Comment se connecter au Wi-Fi d'Air Algérie?" },
     { label: t('chatbot.quickActions.vpn'), prompt: "Je besoin d'un accès VPN pour le télétravail" },
@@ -430,7 +440,6 @@ export default function ChatBot({ onClose }: ChatBotProps) {
     { label: t('chatbot.quickActions.leave'), prompt: "Je veux faire une demande de congés" },
     { label: t('chatbot.quickActions.itIncident'), prompt: "Mon ordinateur ne démarre plus, c'est urgent!" },
     { label: t('chatbot.quickActions.myTickets'), prompt: "Comment consulter mes tickets?" },
-    { label: t('chatbot.quickActions.createTicket'), prompt: "Comment créer un nouveau ticket?" },
     { label: t('chatbot.quickActions.dashboard'), prompt: "Comment lire les statistiques du dashboard?" },
     { label: t('chatbot.quickActions.ticketStatus'), prompt: "Comment vérifier le statut de mon ticket?" },
     { label: t('chatbot.quickActions.urgentTicket'), prompt: "Comment signaler un ticket urgent?" },

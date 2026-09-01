@@ -22,7 +22,7 @@ function Loginform() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/projects";
+  const from = location.state?.from?.pathname || "/";
 
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");

@@ -5,6 +5,7 @@ Un système complet de gestion de tickets développé avec **Spring Boot** (back
 ## 📋 Table des Matières
 
 - [Fonctionnalités](#-fonctionnalités)
+- [Captures d'écran](#-captures-décran)
 - [Architecture](#-architecture)
 - [Prérequis](#-prérequis)
 - [Installation](#-installation)
@@ -38,6 +39,22 @@ Un système complet de gestion de tickets développé avec **Spring Boot** (back
 - ✅ **Création automatique de tickets** : L'IA peut extraire les informations et créer un ticket directement depuis la conversation.
 - ✅ **Classification intelligente** : Détermination automatique de la catégorie et de la priorité des demandes.
 - ✅ **Détection de doublons** : Analyse sémantique pour éviter les tickets redondants.
+
+---
+
+## 📸 Captures d'écran
+
+| | |
+|---|---|
+| ![Page de connexion](captures/Login%20d%20app.png) | ![Page d'accueil de l'application](captures/Page%20d%20acceuil%20d%20app.png) |
+
+| | |
+|---|---|
+| ![Assistant IA](captures/assistant%20ai.png) | ![Knowledge Center](captures/Knowledge%20center.png) |
+
+| | |
+|---|---|
+| ![Détail de ticket](captures/detail%20de%20ticket.png) | ![Changement de mot de passe](captures/Changement%20de%20mot%20de%20passe.png) |
 
 ---
 

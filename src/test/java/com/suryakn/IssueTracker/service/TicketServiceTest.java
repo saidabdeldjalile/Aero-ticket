@@ -7,6 +7,9 @@ import com.suryakn.IssueTracker.dto.TicketUpdateRequest;
 import com.suryakn.IssueTracker.duplicate.DuplicateTicketService;
 import com.suryakn.IssueTracker.entity.*;
 import com.suryakn.IssueTracker.repository.ProjectRepository;
+import com.suryakn.IssueTracker.repository.CommentRepository;
+import com.suryakn.IssueTracker.repository.CommentScreenshotRepository;
+import com.suryakn.IssueTracker.repository.ScreenshotRepository;
 import com.suryakn.IssueTracker.repository.TicketRepository;
 import com.suryakn.IssueTracker.repository.UserRepository;
 import com.suryakn.IssueTracker.repository.VectorTableRepository;
@@ -45,6 +48,15 @@ class TicketServiceTest {
 
     @Mock
     private VectorTableRepository vectorTableRepository;
+
+    @Mock
+    private CommentRepository commentRepository;
+
+    @Mock
+    private CommentScreenshotRepository commentScreenshotRepository;
+
+    @Mock
+    private ScreenshotRepository screenshotRepository;
 
     @Mock
     private CommentService commentService;
@@ -149,11 +161,19 @@ class TicketServiceTest {
 
     @Test
     void testDeleteTicket_WhenExists_ShouldDeletePermanently() {
+        Comment comment = Comment.builder().id(10L).build();
         when(ticketRepository.findById(1L)).thenReturn(Optional.of(testTicket));
+        when(commentRepository.findByTicket_Id(1L)).thenReturn(List.of(comment));
+        when(commentScreenshotRepository.findByCommentIdIn(List.of(10L))).thenReturn(List.of());
+
         ticketService.deleteTicket(1L);
 
         verify(ticketRepository, times(1)).findById(1L);
-        verify(ticketRepository, times(1)).delete((Ticket) testTicket);
+        verify(commentScreenshotRepository, times(1)).deleteByCommentIdIn(List.of(10L));
+        verify(screenshotRepository, times(1)).deleteByTicketId(1L);
+        verify(commentRepository, times(1)).deleteByTicketId(1L);
+        verify(vectorTableRepository, times(1)).deleteByTicketId(1L);
+        verify(ticketRepository, times(1)).deleteByIdNative(1L);
         verify(ticketRepository, never()).save(any());
     }
 
@@ -163,8 +183,9 @@ class TicketServiceTest {
         ticketService.deleteTicket(999L);
 
         verify(ticketRepository, times(1)).findById(999L);
+        verify(commentRepository, never()).findByTicket_Id(999L);
+        verify(ticketRepository, never()).deleteByIdNative(999L);
         verify(ticketRepository, never()).save(any());
-        verify(ticketRepository, never()).delete((Ticket) any());
     }
 
     @Test

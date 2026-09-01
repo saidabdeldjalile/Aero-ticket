@@ -34,7 +34,7 @@ public class Department {
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnoreProperties({"department", "tickets"})
     @JsonIgnore
     private List<Project> projects = new ArrayList<>();

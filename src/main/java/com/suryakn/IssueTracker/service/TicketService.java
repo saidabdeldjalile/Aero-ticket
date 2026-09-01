@@ -8,12 +8,9 @@ import com.suryakn.IssueTracker.duplicate.DuplicateTicketService;
 import com.suryakn.IssueTracker.duplicate.PythonResponse;
 import com.suryakn.IssueTracker.entity.*;
 import com.suryakn.IssueTracker.repository.CategoryRepository;
-import com.suryakn.IssueTracker.repository.ProjectRepository;
-import com.suryakn.IssueTracker.repository.TicketRepository;
-import com.suryakn.IssueTracker.repository.UserRepository;
-import com.suryakn.IssueTracker.repository.VectorTableRepository;
-import com.suryakn.IssueTracker.entity.*;
-// import com.suryakn.IssueTracker.repository.AttachmentRepository;
+import com.suryakn.IssueTracker.repository.CommentRepository;
+import com.suryakn.IssueTracker.repository.CommentScreenshotRepository;
+import com.suryakn.IssueTracker.repository.ScreenshotRepository;
 import com.suryakn.IssueTracker.repository.ProjectRepository;
 import com.suryakn.IssueTracker.repository.TicketRepository;
 import com.suryakn.IssueTracker.repository.UserRepository;
@@ -29,6 +26,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +55,9 @@ public class TicketService {
     private final CommentService commentService;
     private final NotificationService notificationService;
     private final EmailService emailService;
+    private final CommentScreenshotRepository commentScreenshotRepository;
+    private final ScreenshotRepository screenshotRepository;
+    private final CommentRepository commentRepository;
     // private final AttachmentRepository attachmentRepository;
     
     /**
@@ -344,6 +348,11 @@ public class TicketService {
                 }
             }
             
+            if (!ids.isEmpty()) {
+                log.warn("Ticket creation rejected. Similar tickets found in system: {}", ids);
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+            
             // Resolve category entity
             Category categoryEntity = null;
             if (ticketRequest.getCategoryId() != null) {
@@ -371,16 +380,6 @@ public class TicketService {
                 .project(project)
                 .build();
             
-            // Handle duplicate
-            if (!ids.isEmpty()) {
-                ticket.setTitle("(duplicate #" + Collections.min(ids) + ") " + ticket.getTitle());
-                if (!similarTicketList.isEmpty()) {
-                    Ticket dupTicket = similarTicketList.get(0);
-                    if (dupTicket.getAssignedTo() != null) {
-                        ticket.setAssignedTo(dupTicket.getAssignedTo());
-                    }
-                }
-            }
             
             try {
                 Ticket newTicket = ticketRepository.save(ticket);
@@ -523,17 +522,34 @@ public class TicketService {
             }
             
             // Handle project assignment (admin orientation of chatbot tickets)
+            // If projectId is provided in the request (even if null), we update the project accordingly.
+            // We assume that the frontend always sends the projectId field in the PATCH request for project changes.
             if (updateRequest.getProjectId() != null) {
-                var projectOpt = projectRepository.findById(updateRequest.getProjectId());
-                if (projectOpt.isPresent()) {
-                    Project newProject = projectOpt.get();
-                    ticket.setProject(newProject);
-                    ticket.setRoutedDepartmentName(newProject.getDepartment() != null ? newProject.getDepartment().getName() : null);
-                    ticket.setRoutingReason("Projet assigné par l'admin: " + newProject.getName());
-                    log.info("Ticket {} assigned to project '{}' by admin", id, newProject.getName());
+                // projectId is provided and not null
+                if (updateRequest.getProjectId() == 0) {
+                    // Remove project
+                    ticket.setProject(null);
+                    ticket.setRoutedDepartmentName(null);
+                    ticket.setRoutingReason("Projet retiré par l'admin");
+                    log.info("Project removed from ticket {} by admin", id);
                 } else {
-                    log.warn("Cannot assign project to ticket {}: project {} not found", id, updateRequest.getProjectId());
+                    var projectOpt = projectRepository.findById(updateRequest.getProjectId());
+                    if (projectOpt.isPresent()) {
+                        Project newProject = projectOpt.get();
+                        ticket.setProject(newProject);
+                        ticket.setRoutedDepartmentName(newProject.getDepartment() != null ? newProject.getDepartment().getName() : null);
+                        ticket.setRoutingReason("Projet assigné par l'admin: " + newProject.getName());
+                        log.info("Ticket {} assigned to project '{}' by admin", id, newProject.getName());
+                    } else {
+                        log.warn("Cannot assign project to ticket {}: project {} not found", id, updateRequest.getProjectId());
+                    }
                 }
+            } else {
+                // projectId is null (explicitly set to null) -> remove project
+                ticket.setProject(null);
+                ticket.setRoutedDepartmentName(null);
+                ticket.setRoutingReason("Projet retiré par l'admin");
+                log.info("Project removed from ticket {} by admin (null projectId)", id);
             }
             
             ticketRepository.save(ticket);
@@ -635,12 +651,49 @@ public class TicketService {
 
     @Transactional
     public void deleteTicket(Long id) {
-        // Physical deletion - permanently remove from database
-        Optional<Ticket> optionalTicket = ticketRepository.findById(id);
-        if (optionalTicket.isPresent()) {
-            Ticket ticket = optionalTicket.get();
-            ticketRepository.delete(ticket);
-            log.info("Ticket {} permanently deleted", id);
+        Optional<Ticket> ticketOpt = ticketRepository.findById(id);
+        if (ticketOpt.isEmpty()) {
+            return;
+        }
+
+        List<Long> commentIds = commentRepository.findByTicket_Id(id).stream()
+            .map(Comment::getId)
+            .collect(Collectors.toList());
+
+        if (!commentIds.isEmpty()) {
+            List<CommentScreenshot> commentScreenshots = commentScreenshotRepository.findByCommentIdIn(commentIds);
+            for (CommentScreenshot cs : commentScreenshots) {
+                deleteFile(cs.getImageUrl());
+            }
+            commentScreenshotRepository.deleteByCommentIdIn(commentIds);
+        }
+
+        List<Screenshot> screenshots = screenshotRepository.findByTicketId(id);
+        for (Screenshot screenshot : screenshots) {
+            deleteFile(screenshot.getImageUrl());
+        }
+        screenshotRepository.deleteByTicketId(id);
+
+        commentRepository.deleteByTicketId(id);
+        vectorTableRepository.deleteByTicketId(id);
+
+        ticketRepository.deleteByIdNative(id);
+        log.info("Ticket {} permanently deleted (children removed explicitly)", id);
+    }
+
+    private void deleteFile(String imageUrl) {
+        if (imageUrl == null || !imageUrl.startsWith("/api/screenshots/")) {
+            return;
+        }
+        try {
+            String fileName = imageUrl.substring("/api/screenshots/".length());
+            Path filePath = Paths.get("uploads/screenshots").resolve(fileName);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                log.info("Deleted file: {}", fileName);
+            }
+        } catch (IOException e) {
+            log.error("Error deleting file {}: {}", imageUrl, e.getMessage());
         }
     }
 
@@ -1148,9 +1201,11 @@ public class TicketService {
         if (ticketIds == null || ticketIds.isEmpty()) {
             return;
         }
-        // Physical deletion - permanently remove from database
-        ticketRepository.deleteByIdIn(ticketIds);
-        log.info("Permanently deleted {} tickets", ticketIds.size());
+        // Explicitly delete all child records for each ticket before deleting the tickets
+        for (Long ticketId : ticketIds) {
+            deleteTicket(ticketId);
+        }
+        log.info("Permanently deleted {} tickets via bulk delete", ticketIds.size());
     }
 
     @Transactional

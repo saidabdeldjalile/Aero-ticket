@@ -19,4 +19,6 @@ public interface CategoryIssueTypeRepository extends JpaRepository<CategoryIssue
     @Transactional
     @Query(value = "DELETE FROM category_issue_type WHERE category_id = :categoryId", nativeQuery = true)
     void deleteByCategoryId(@Param("categoryId") Long categoryId);
+
+    boolean existsByCategoryIdAndIssueType(Long categoryId, String issueType);
 }

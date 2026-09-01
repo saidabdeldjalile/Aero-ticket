@@ -40,12 +40,11 @@ public class CategoryService {
 
     @Transactional
     public ResponseEntity<CategoryDTO> createCategory(CategoryRequest request) {
-        // Validate name uniqueness
-        if (categoryRepository.existsByName(request.getName())) {
+        if (categoryRepository.existsByNameIgnoreCase(request.getName())) {
+            log.warn("Category with name '{}' already exists (case-insensitive)", request.getName());
             return ResponseEntity.badRequest().build();
         }
 
-        // Create category
         Category category = Category.builder()
             .name(request.getName())
             .label(request.getLabel())
@@ -54,7 +53,6 @@ public class CategoryService {
             .build();
         category = categoryRepository.save(category);
 
-        // Save issue type relations
         saveIssueTypesForCategory(category.getId(), request.getAllowedIssueTypes());
 
         log.info("Category '{}' created with id: {}", request.getName(), category.getId());
@@ -69,13 +67,16 @@ public class CategoryService {
         }
 
         Category category = optCat.get();
+        if (request.getName() != null && !request.getName().equalsIgnoreCase(category.getName()) && categoryRepository.existsByNameIgnoreCase(request.getName())) {
+            log.warn("Category with name '{}' already exists", request.getName());
+            return ResponseEntity.badRequest().build();
+        }
         category.setName(request.getName());
         category.setLabel(request.getLabel());
         category.setDescription(request.getDescription());
         category.setActive(request.isActive());
         categoryRepository.save(category);
 
-        // Replace issue type relations
         categoryIssueTypeRepository.deleteByCategoryId(id);
         saveIssueTypesForCategory(id, request.getAllowedIssueTypes());
 
@@ -108,12 +109,17 @@ public class CategoryService {
             return;
         }
         List<CategoryIssueType> relations = issueTypes.stream()
+            .distinct()
+            .filter(type -> !categoryIssueTypeRepository.existsByCategoryIdAndIssueType(categoryId, type))
             .map(type -> CategoryIssueType.builder()
                 .categoryId(categoryId)
                 .issueType(type)
                 .build())
             .collect(Collectors.toList());
-        categoryIssueTypeRepository.saveAll(relations);
+        if (!relations.isEmpty()) {
+            categoryIssueTypeRepository.saveAll(relations);
+            log.info("Saved {} issue types for category id={}", relations.size(), categoryId);
+        }
     }
 
     private CategoryDTO toDTO(Category category) {

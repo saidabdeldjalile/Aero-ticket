@@ -35,7 +35,8 @@ public class IssueTypeDefService {
 
     @Transactional
     public ResponseEntity<IssueTypeDTO> create(IssueTypeDTO dto) {
-        if (issueTypeDefRepository.existsByName(dto.getName())) {
+        if (issueTypeDefRepository.existsByNameIgnoreCase(dto.getName())) {
+            log.warn("IssueType with name '{}' already exists (case-insensitive)", dto.getName());
             return ResponseEntity.badRequest().build();
         }
         IssueTypeDef entity = IssueTypeDef.builder()
@@ -53,6 +54,10 @@ public class IssueTypeDefService {
     public ResponseEntity<IssueTypeDTO> update(Long id, IssueTypeDTO dto) {
         return issueTypeDefRepository.findById(id)
             .map(entity -> {
+                if (dto.getName() != null && !dto.getName().equalsIgnoreCase(entity.getName()) && issueTypeDefRepository.existsByNameIgnoreCase(dto.getName())) {
+                    log.warn("IssueType with name '{}' already exists", dto.getName());
+                    return ResponseEntity.badRequest().<IssueTypeDTO>build();
+                }
                 entity.setName(dto.getName());
                 entity.setLabel(dto.getLabel());
                 entity.setDescription(dto.getDescription());

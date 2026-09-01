@@ -12,8 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +78,10 @@ public class ProjectService {
     }
 
     public ResponseEntity<Project> createProject(ProjectRequest projectRequest) {
+        if (projectRequest.getName() != null && projectRepository.existsByNameIgnoreCase(projectRequest.getName())) {
+            log.warn("Project with name '{}' already exists", projectRequest.getName());
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
         Department department = null;
         if (projectRequest.getDepartmentId() != null) {
             department = departmentRepository.findById(projectRequest.getDepartmentId()).orElse(null);
@@ -102,6 +109,40 @@ public class ProjectService {
 
     public ResponseEntity<ProjectDto> getProject(Long pid) {
         return ResponseEntity.ok(new ProjectDto(projectRepository.findById(pid).orElseThrow()));
+    }
+
+    @Transactional
+    public ResponseEntity<ProjectDto> updateProject(Long pid, ProjectRequest projectRequest) {
+        var optProject = projectRepository.findById(pid);
+        if (optProject.isEmpty()) {
+            log.warn("Project with id {} not found", pid);
+            return ResponseEntity.notFound().build();
+        }
+
+        Project project = optProject.get();
+        
+        // Check if new name would create a duplicate (only if name is changing)
+        if (projectRequest.getName() != null && !projectRequest.getName().equalsIgnoreCase(project.getName()) && 
+            projectRepository.existsByNameIgnoreCase(projectRequest.getName())) {
+            log.warn("Project with name '{}' already exists", projectRequest.getName());
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        // Update project name
+        if (projectRequest.getName() != null) {
+            project.setName(projectRequest.getName());
+        }
+
+        // Update department if provided
+        if (projectRequest.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(projectRequest.getDepartmentId()).orElse(null);
+            project.setDepartment(department);
+        }
+
+        Project updatedProject = projectRepository.save(project);
+        log.info("Project '{}' (id={}) updated", updatedProject.getName(), pid);
+        
+        return ResponseEntity.ok(new ProjectDto(updatedProject));
     }
 
     public void deleteProject(Long pid) {

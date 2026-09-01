@@ -42,7 +42,8 @@
                 baseColumnNames="department_id"
                 constraintName="fk_user_department"
                 referencedTableName="department"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <!-- ==================== PROJECT ==================== -->
@@ -64,7 +65,8 @@
                 baseColumnNames="department_id"
                 constraintName="fk_project_department"
                 referencedTableName="department"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <!-- ==================== TICKET ==================== -->
@@ -113,7 +115,8 @@
                 baseColumnNames="project_id"
                 constraintName="fk_ticket_project"
                 referencedTableName="project"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <!-- ==================== COMMENT ==================== -->
@@ -146,7 +149,8 @@
                 baseColumnNames="ticket_id"
                 constraintName="fk_comment_ticket"
                 referencedTableName="ticket"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <!-- ==================== SCREENSHOT ==================== -->
@@ -177,7 +181,8 @@
                 baseColumnNames="ticket_id"
                 constraintName="fk_screenshot_ticket"
                 referencedTableName="ticket"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
 
         <addForeignKeyConstraint
                 baseTableName="screenshot"
@@ -215,7 +220,8 @@
                 baseColumnNames="comment_id"
                 constraintName="fk_commentscreenshot_comment"
                 referencedTableName="comment"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
 
         <addForeignKeyConstraint
                 baseTableName="commentscreenshot"
@@ -257,7 +263,8 @@
                 baseColumnNames="department_id"
                 constraintName="fk_notification_department"
                 referencedTableName="department"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <!-- ==================== FAQ ==================== -->
@@ -285,7 +292,8 @@
                 baseColumnNames="department_id"
                 constraintName="fk_faq_department"
                 referencedTableName="department"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <!-- FAQ Keywords Element Collection -->
@@ -365,7 +373,8 @@
                 baseColumnNames="department_id"
                 constraintName="fk_procedure_department"
                 referencedTableName="department"
-                referencedColumnNames="id"/>
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <!-- ==================== VECTOR_TABLE ==================== -->

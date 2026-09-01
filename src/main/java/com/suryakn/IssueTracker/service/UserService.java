@@ -11,6 +11,7 @@ import com.suryakn.IssueTracker.repository.DepartmentRepository;
 import com.suryakn.IssueTracker.repository.TicketRepository;
 import com.suryakn.IssueTracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
@@ -55,12 +57,11 @@ public class UserService {
     }
 
     public ResponseEntity<UserProjection> createUser(CreateUserRequest request) {
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
+            log.warn("User with email '{}' already exists (case-insensitive)", request.getEmail());
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        // Check if registrationNumber already exists (if provided)
         if (request.getRegistrationNumber() != null && !request.getRegistrationNumber().isEmpty()) {
             if (userRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -68,15 +69,14 @@ public class UserService {
         }
 
         UserEntity user = UserEntity.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.valueOf(request.getRole()))
-                .registrationNumber(request.getRegistrationNumber())
-                .build();
+            .firstName(request.getFirstName())
+            .lastName(request.getLastName())
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .role(Role.valueOf(request.getRole()))
+            .registrationNumber(request.getRegistrationNumber())
+            .build();
 
-        // Set department if provided
         if (request.getDepartmentId() != null) {
             Optional<Department> department = departmentRepository.findById(request.getDepartmentId());
             department.ifPresent(user::setDepartment);
@@ -93,13 +93,11 @@ public class UserService {
             return ResponseEntity.notFound().build();
         }
         
-        // Check if email is being changed and if new email already exists
         UserEntity existingUser = userOptional.get();
-        if (!existingUser.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+        if (!existingUser.getEmail().equalsIgnoreCase(request.getEmail()) && userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
         
-        // Check if registrationNumber is being changed and if new registrationNumber already exists
         if (request.getRegistrationNumber() != null && !request.getRegistrationNumber().equals(existingUser.getRegistrationNumber())) {
             if (userRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();

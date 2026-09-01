@@ -83,13 +83,13 @@ export default function DepartmentList() {
 
     const request = editingDepartment
       ? api.put(`/departments/${editingDepartment.id}`, {
-        name: departmentName,
-        description: description,
-      })
+          name: departmentName,
+          description: description,
+        })
       : api.post("/departments", {
-        name: departmentName,
-        description: description,
-      });
+          name: departmentName,
+          description: description,
+        });
 
     request
       .then(() => {
@@ -99,7 +99,12 @@ export default function DepartmentList() {
       })
       .catch((err) => {
         console.error("Error saving department:", err);
-        toast.error(t('common.errors.generic'));
+        const status = err?.response?.status;
+        if (status === 409 || status === 400) {
+          toast.error(t('errors.duplicateDepartment'));
+        } else {
+          toast.error(t('errors.saveFailed'));
+        }
       })
       .finally(() => {
         setSaving(false);
@@ -114,7 +119,7 @@ export default function DepartmentList() {
     try {
       await api.delete(`/departments/${id}`);
       toast.success(t('department.deleteSuccess'));
-      mutate(key);
+      mutate(key, undefined, { revalidate: true });
     } catch (err) {
       console.error("Error deleting department:", err);
       toast.error(t('common.errors.generic'));

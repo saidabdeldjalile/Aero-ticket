@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface IssueTypeDefRepository extends JpaRepository<IssueTypeDef, Long> {
     Optional<IssueTypeDef> findByName(String name);
     boolean existsByName(String name);
+    boolean existsByNameIgnoreCase(String name);
 }

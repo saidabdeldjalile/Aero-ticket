@@ -230,14 +230,41 @@ public class DashboardServiceImpl implements DashboardService {
         
         if (filters != null) {
             // Filter by date range
-            if (filters.getStartDate() != null && filters.getEndDate() != null) {
-                LocalDate start = LocalDate.parse(filters.getStartDate());
-                LocalDate end = LocalDate.parse(filters.getEndDate());
+            if (filters.getStartDate() != null || filters.getEndDate() != null) {
+                LocalDate start = null;
+                LocalDate end = null;
+                
+                if (filters.getStartDate() != null && !filters.getStartDate().isBlank()) {
+                    try {
+                        start = LocalDate.parse(filters.getStartDate());
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Format de date de début de filtre invalide (attendu yyyy-MM-dd)");
+                    }
+                }
+                
+                if (filters.getEndDate() != null && !filters.getEndDate().isBlank()) {
+                    try {
+                        end = LocalDate.parse(filters.getEndDate());
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Format de date de fin de filtre invalide (attendu yyyy-MM-dd)");
+                    }
+                }
+                
+                if (start != null && end != null && start.isAfter(end)) {
+                    throw new IllegalArgumentException("La date de début doit être inférieure ou égale à la date de fin");
+                }
+                
+                final LocalDate finalStart = start;
+                final LocalDate finalEnd = end;
                 
                 tickets = tickets.stream()
-                    .filter(t -> t.getCreatedAt() != null && 
-                                !t.getCreatedAt().toLocalDate().isBefore(start) && 
-                                !t.getCreatedAt().toLocalDate().isAfter(end))
+                    .filter(t -> {
+                        if (t.getCreatedAt() == null) return false;
+                        LocalDate ticketDate = t.getCreatedAt().toLocalDate();
+                        if (finalStart != null && ticketDate.isBefore(finalStart)) return false;
+                        if (finalEnd != null && ticketDate.isAfter(finalEnd)) return false;
+                        return true;
+                    })
                     .collect(Collectors.toList());
             }
             

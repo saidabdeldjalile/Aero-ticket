@@ -34,7 +34,7 @@ public class Comment {
     @JoinColumn(name = "ticket_id")
     private Ticket ticket;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<CommentScreenshot> commentScreenshots;
 
     @CreatedDate

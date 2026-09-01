@@ -71,6 +71,11 @@ public class ProjectController {
         return projectService.createProject(projectRequest);
     }
 
+    @PutMapping("{pid}")
+    public ResponseEntity<ProjectDto> updateProject(@PathVariable Long pid, @Valid @RequestBody ProjectRequest projectRequest) {
+        return projectService.updateProject(pid, projectRequest);
+    }
+
     @GetMapping("{pid}/tickets")
     public ResponseEntity<Page<TicketResponse>> ticketsWithProjectId(
             @PathVariable Long pid,

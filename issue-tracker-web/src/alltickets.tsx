@@ -407,6 +407,10 @@ export default function AllTickets() {
             <button
               className="btn btn-primary btn-sm"
               onClick={() => {
+                if (tempFilters.startDate && tempFilters.endDate && new Date(tempFilters.startDate) > new Date(tempFilters.endDate)) {
+                  toast.error(t('errors.dateFilterOrder'));
+                  return;
+                }
                 setFilters(tempFilters);
                 setPage(0);
               }}

@@ -4,6 +4,7 @@ import { mutate } from "swr";
 import { toast } from "react-toastify";
 import useAuth from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Department } from "../TicketResponse";
 
 // interface MutateProps {
@@ -12,6 +13,7 @@ import { Department } from "../TicketResponse";
 // }
 
 export default function AddProjectButton() {
+  const { t } = useTranslation();
   const [projectName, setProjectName] = useState<string>("");
   const [departmentId, setDepartmentId] = useState<number | "">("");
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -39,15 +41,18 @@ export default function AddProjectButton() {
         name: projectName,
         departmentId: departmentId || null,
       })
-      .then((res) => {
-        console.log(res);
+      .then((_res) => {
         mutate("project");
-        toast.success("Project added successfully");
+        toast.success(t('project.createSuccess') || "Project added successfully");
       })
       .catch((err) => {
         console.error("Error adding project:", err);
-        const errorMessage = err.response?.data?.message || err.message || "Failed to add project";
-        toast.error(errorMessage);
+        const status = err?.response?.status;
+        if (status === 409 || status === 400) {
+          toast.error(t('errors.duplicateProject'));
+        } else {
+          toast.error(t('errors.saveFailed'));
+        }
       });
     setProjectName("");
     setDepartmentId("");
